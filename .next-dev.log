@@ -1,0 +1,43 @@
+
+> voc-intelligence-console@0.1.0 dev
+> next dev --hostname 0.0.0.0 --port 3000
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 406ms
+Creating turbopack project { dir: 'E:\\My Voc', testMode: true }
+
+ GET / 307 in 746ms (next.js: 194ms, application-code: 552ms)
+ GET /dashboard 200 in 294ms (next.js: 44ms, application-code: 249ms)
+ GET /sources 200 in 760ms (next.js: 723ms, application-code: 37ms)
+ GET /prompts 200 in 586ms (next.js: 546ms, application-code: 40ms)
+ GET /pipelines 200 in 1568ms (next.js: 1514ms, application-code: 54ms)
+ GET /dashboard 200 in 33ms (next.js: 5ms, application-code: 28ms)
+ GET /labels 200 in 557ms (next.js: 522ms, application-code: 35ms)
+ GET /prompts 200 in 30ms (next.js: 5ms, application-code: 25ms)
+ GET /dashboard 200 in 28ms (next.js: 6ms, application-code: 22ms)
+ GET /dashboard 200 in 90ms (next.js: 5ms, application-code: 84ms)
+ GET /dashboard 200 in 119ms (next.js: 5ms, application-code: 114ms)
+ GET /dashboard 200 in 122ms (next.js: 4ms, application-code: 118ms)
+ GET /sources 200 in 32ms (next.js: 5ms, application-code: 28ms)
+✓ Compiled in 480ms
+ GET /sources 200 in 220ms (next.js: 41ms, application-code: 179ms)
+ GET /sources 200 in 715ms (next.js: 194ms, application-code: 521ms)
+ GET /sources 200 in 53ms (next.js: 10ms, application-code: 43ms)
+ GET /sources 200 in 228ms (next.js: 6ms, application-code: 221ms)
+ GET /prompts 200 in 150ms (next.js: 85ms, application-code: 66ms)
+ GET /prompts 200 in 179ms (next.js: 4ms, application-code: 174ms)
+ GET /prompts 200 in 13ms (next.js: 4ms, application-code: 9ms)
+ GET /prompts 200 in 25ms (next.js: 3ms, application-code: 22ms)
+✓ Compiled in 159ms
+ GET /prompts 200 in 283ms (next.js: 128ms, application-code: 155ms)
+ GET /prompts 200 in 83ms (next.js: 7ms, application-code: 77ms)
+ GET /prompts 200 in 448ms (next.js: 5ms, application-code: 443ms)
+ GET /labels 200 in 147ms (next.js: 95ms, application-code: 52ms)
+ GET /sources 200 in 51ms (next.js: 21ms, application-code: 31ms)
+ GET /search 200 in 568ms (next.js: 538ms, application-code: 30ms)
+ GET /search 200 in 226ms (next.js: 28ms, application-code: 197ms)
+ GET /pipelines 200 in 121ms (next.js: 83ms, application-code: 38ms)
+ GET /prompts 200 in 30ms (next.js: 6ms, application-code: 24ms)
+ GET /prompts 200 in 71ms (next.js: 4ms, application-code: 67ms)

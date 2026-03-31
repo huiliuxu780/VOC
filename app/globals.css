@@ -1,0 +1,272 @@
+@import "tailwindcss";
+
+:root {
+  --font-space-grotesk: "Bahnschrift", "Aptos", "Trebuchet MS", sans-serif;
+  --font-jetbrains-mono: "Cascadia Mono", "Consolas", monospace;
+  --background: #070b14;
+  --background-secondary: #0f1728;
+  --card-background: rgba(17, 25, 40, 0.72);
+  --card-solid: rgba(12, 19, 33, 0.92);
+  --border-soft: rgba(120, 180, 255, 0.18);
+  --ring-primary: rgba(91, 140, 255, 0.42);
+  --highlight-primary: #5b8cff;
+  --highlight-secondary: #7c3aed;
+  --highlight-cyan: #22d3ee;
+  --success: #10b981;
+  --danger: #f43f5e;
+  --warning: #f59e0b;
+  --foreground: #e5eeff;
+  --muted-foreground: rgba(229, 238, 255, 0.68);
+  --grid-line: rgba(120, 180, 255, 0.06);
+  --shadow-glow: 0 0 0 1px rgba(120, 180, 255, 0.08), 0 18px 60px rgba(6, 12, 24, 0.58);
+  --shadow-elevated:
+    0 0 0 1px rgba(120, 180, 255, 0.1),
+    0 18px 44px rgba(5, 10, 22, 0.54),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+* {
+  border-color: var(--border-soft);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(91, 140, 255, 0.2), transparent 26%),
+    radial-gradient(circle at 86% 14%, rgba(34, 211, 238, 0.16), transparent 23%),
+    radial-gradient(circle at 78% 52%, rgba(124, 58, 237, 0.12), transparent 26%),
+    radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.16), transparent 34%),
+    linear-gradient(180deg, #070b14 0%, #09111f 48%, #070b14 100%);
+  color: var(--foreground);
+  font-family: var(--font-space-grotesk), sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 95%);
+  opacity: 0.85;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.04), transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 40%),
+    linear-gradient(90deg, transparent 0%, rgba(91, 140, 255, 0.035) 50%, transparent 100%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+::selection {
+  background: rgba(91, 140, 255, 0.35);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(120, 180, 255, 0.18);
+  border-radius: 999px;
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 140, 255, 0.18);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(91, 140, 255, 0);
+  }
+}
+
+@keyframes float-up {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes panel-scan {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 0.38;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+  }
+
+  h1 {
+    letter-spacing: -0.05em;
+  }
+
+  h2 {
+    letter-spacing: -0.045em;
+  }
+
+  p {
+    color: var(--muted-foreground);
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: var(--card-background);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .glass-card-solid {
+    background: var(--card-solid);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border-soft);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .soft-glow {
+    position: relative;
+  }
+
+  .soft-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      rgba(91, 140, 255, 0.28),
+      rgba(34, 211, 238, 0.08),
+      rgba(124, 58, 237, 0.24)
+    );
+    opacity: 0.78;
+    z-index: -1;
+    filter: blur(20px);
+  }
+
+  .text-muted {
+    color: var(--muted-foreground);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #e8f1ff 0%, #8db5ff 48%, #67e8f9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-grid {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(120, 180, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120, 180, 255, 0.06) 1px, transparent 1px);
+    background-size: 38px 38px;
+    mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.78), transparent 92%);
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .panel-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .panel-sheen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 36%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    transform: translateX(-120%);
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .panel-hover:hover.panel-sheen::after {
+    animation: panel-scan 1.6s ease;
+  }
+
+  .panel-hover {
+    transition:
+      transform 240ms ease,
+      border-color 240ms ease,
+      background-color 240ms ease,
+      box-shadow 240ms ease,
+      filter 240ms ease;
+  }
+
+  .panel-hover:hover {
+    transform: translateY(-6px);
+    border-color: rgba(120, 180, 255, 0.3);
+    box-shadow:
+      0 0 0 1px rgba(120, 180, 255, 0.14),
+      0 20px 62px rgba(7, 11, 20, 0.82),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    filter: saturate(1.05);
+  }
+
+  .status-pulse {
+    animation: pulse-glow 2.8s infinite;
+  }
+
+  .floating {
+    animation: float-up 5s ease-in-out infinite;
+  }
+}
