@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VOC AI Labeling Platform (MVP)
 
-## Getting Started
+前后端分离项目：
+- 前端：`frontend/`（React + Vite + Tailwind）
+- 后端：`backend/`（FastAPI + SQLAlchemy）
 
-First, run the development server:
+## 快速启动
 
-```bash
+### 1) 启动前端
+
+```powershell
+cd frontend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+默认地址：`http://localhost:5173`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+前端安装卡住时可用替换方案：
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+cd frontend
+powershell -ExecutionPolicy Bypass -File .\setup-deps.ps1 -NoAudit
+```
 
-## Learn More
+### 2) 启动后端
 
-To learn more about Next.js, take a look at the following resources:
+推荐在项目根目录执行（自动查找 Python 路径）：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+.\start-api.ps1 -Port 8000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+也可以手动执行：
 
-## Deploy on Vercel
+```powershell
+cd backend
+pip install -e .
+python -m uvicorn app.main:app --reload --port 8000
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+健康检查：`http://localhost:8000/health`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+如果 Python 不在 PATH，可用完整路径：
+
+```powershell
+C:\Users\<YourUser>\AppData\Local\Programs\Python\Python312\python.exe -m uvicorn app.main:app --reload --port 8000
+```
+
+## 常用接口前缀
+
+- `/api/v1/datasources`
+- `/api/v1/labels`
+- `/api/v1/prompts`
+- `/api/v1/jobs`
+- `/api/v1/monitoring`
+
+## 当前状态
+
+- 前端：Dashboard、数据源、Mapping、Prompt、作业管理、监控页面可用。
+- 后端：配置与作业链路接口可用，支持运行记录、失败明细、单条失败重试。
+- 运行时：内置 mock seed，可直接联调。

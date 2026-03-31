@@ -206,7 +206,7 @@ def _advance_running_runs(db: Session) -> None:
     changed = False
 
     for run in running_runs:
-        stages = db.scalars(select(JobRunStage).where(JobRun.run_id == run.run_id).order_by(JobRunStage.id)).all()
+        stages = db.scalars(select(JobRunStage).where(JobRunStage.run_id == run.run_id).order_by(JobRunStage.id)).all()
         if not stages:
             continue
 
