@@ -42,3 +42,16 @@ next-env.d.ts
 
 # local AI assistant generated files
 .codex/
+
+# monorepo/common generated folders
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/*.egg-info/
+
+# local runtime artifacts
+backend/*.db
+backend/*.log
+backend/tmp_api.*.log
