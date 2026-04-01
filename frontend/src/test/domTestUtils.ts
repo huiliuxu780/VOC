@@ -63,6 +63,17 @@ export function findLinkByText(container: HTMLElement, text: string): HTMLAnchor
   return link as HTMLAnchorElement;
 }
 
+export function findLinkByPath(container: HTMLElement, path: string): HTMLAnchorElement {
+  const link = Array.from(container.querySelectorAll("a")).find((node) => {
+    const href = (node as HTMLAnchorElement).getAttribute("href");
+    return href === path;
+  });
+  if (!link) {
+    throw new Error(`link not found by path: ${path}`);
+  }
+  return link as HTMLAnchorElement;
+}
+
 export async function clickElement(element: HTMLElement): Promise<void> {
   await act(async () => {
     element.dispatchEvent(new MouseEvent("click", { bubbles: true }));

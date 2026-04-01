@@ -15,7 +15,7 @@ import { AppLayout } from "../layout/AppLayout";
 import { LabelManagementPage } from "../pages/LabelManagementPage";
 import { MonitoringPage } from "../pages/MonitoringPage";
 import { PromptManagementPage } from "../pages/PromptManagementPage";
-import { clickElement, findLinkByText, renderComponent, waitFor } from "../test/domTestUtils";
+import { clickElement, findLinkByPath, renderComponent, waitFor } from "../test/domTestUtils";
 
 vi.mock("../lib/api", async () => {
   const actual = await vi.importActual("../lib/api");
@@ -80,6 +80,24 @@ const monitoringAlerts: MonitoringAlertRecord[] = [
   }
 ];
 
+function createTestRouter(initialEntries: string[]) {
+  return createMemoryRouter(
+    [
+      {
+        path: "/",
+        element: React.createElement(AppLayout),
+        children: [
+          { index: true, element: React.createElement(LabelManagementPage) },
+          { path: "labels", element: React.createElement(LabelManagementPage) },
+          { path: "prompts", element: React.createElement(PromptManagementPage) },
+          { path: "monitoring", element: React.createElement(MonitoringPage) }
+        ]
+      }
+    ],
+    { initialEntries }
+  );
+}
+
 describe("router integration DOM", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -102,22 +120,7 @@ describe("router integration DOM", () => {
       throw new Error(`unexpected apiGet path: ${path}`);
     });
 
-    const router = createMemoryRouter(
-      [
-        {
-          path: "/",
-          element: React.createElement(AppLayout),
-          children: [
-            { index: true, element: React.createElement(LabelManagementPage) },
-            { path: "labels", element: React.createElement(LabelManagementPage) },
-            { path: "prompts", element: React.createElement(PromptManagementPage) },
-            { path: "monitoring", element: React.createElement(MonitoringPage) }
-          ]
-        }
-      ],
-      { initialEntries: ["/labels"] }
-    );
-
+    const router = createTestRouter(["/labels"]);
     const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
 
     await waitFor(() => {
@@ -125,14 +128,14 @@ describe("router integration DOM", () => {
       expect(apiGetMock).toHaveBeenCalledWith("/labels/tree");
     });
 
-    await clickElement(findLinkByText(container, "Prompt 管理"));
+    await clickElement(findLinkByPath(container, "/prompts"));
 
     await waitFor(() => {
       expect(container.textContent).toContain("Prompt");
       expect(apiGetMock).toHaveBeenCalledWith("/prompts?status=all");
     });
 
-    await clickElement(findLinkByText(container, "监控中心"));
+    await clickElement(findLinkByPath(container, "/monitoring"));
 
     await waitFor(() => {
       expect(container.textContent).toContain("Alert Queue");
@@ -140,6 +143,34 @@ describe("router integration DOM", () => {
       expect(apiGetMock).toHaveBeenCalledWith("/monitoring/datasources");
       expect(apiGetMock).toHaveBeenCalledWith("/monitoring/models");
       expect(apiGetMock).toHaveBeenCalledWith("/monitoring/alerts?status=all&severity=all");
+    });
+
+    await unmount();
+  });
+
+  it("shows monitoring load error and can recover by navigating to labels", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/labels/tree") return labelRows;
+      if (path === "/monitoring/dashboard") throw new Error("monitoring down");
+      if (path === "/monitoring/datasources") return monitoringDatasources;
+      if (path === "/monitoring/models") return monitoringModels;
+      if (path === "/monitoring/alerts?status=all&severity=all") return monitoringAlerts;
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createTestRouter(["/monitoring"]);
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("monitoring down");
+    });
+
+    await clickElement(findLinkByPath(container, "/labels"));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Label Tree");
+      expect(apiGetMock).toHaveBeenCalledWith("/labels/tree");
     });
 
     await unmount();
