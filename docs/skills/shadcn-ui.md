@@ -7,6 +7,16 @@
 若与 `AGENTS.md` 冲突，以 `AGENTS.md` 为准。  
 若与当前任务中的明确要求冲突，以当前任务要求为准。
 
+官方 `shadcn/ui` 仓库的技能目录已同步到：
+
+- `docs/skills/shadcn/SKILL.md`
+- `docs/skills/shadcn/rules/*`
+- `docs/skills/shadcn/cli.md`
+- `docs/skills/shadcn/customization.md`
+- `docs/skills/shadcn/mcp.md`
+
+如需查看同步来源与版本，请参考 `docs/skills/shadcn/SYNC.md`。
+
 ---
 
 ## 一、适用范围
