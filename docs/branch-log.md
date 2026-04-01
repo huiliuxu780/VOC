@@ -121,7 +121,7 @@
   - `AGENTS.md`
   - `docs/skills/shadcn-ui.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 在 `AGENTS.md` 增补“前端组件体系规则”完整章节；新增 `docs/skills/shadcn-ui.md`，固化 shadcn/ui 组件复用优先级、Textarea 规则、字段结构与可访问性要求。
 - **验证情况：**
   - lint：不适用
@@ -130,7 +130,7 @@
   - build：不适用
   - 手工验证：已检查 `AGENTS.md` 目标章节存在，`docs/skills/shadcn-ui.md` 内容完整且路径正确
 - **风险说明：** 规则文档如果与现有代码实践不一致，短期可能需要逐步过渡。
-- **下一步：** 提交分支并发起 PR；后续前端任务按该规则执行并逐步清理历史不一致实现。
+- **下一步：** 后续前端任务默认按该规则执行，并在迭代中持续收敛历史组件实现差异。
 
 ---
 
