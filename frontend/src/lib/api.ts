@@ -108,3 +108,29 @@ export type RunFailureDetailResponse = RunFailure & {
     output_payload: Record<string, unknown>;
   }>;
 };
+
+export type MonitoringDashboardMetrics = {
+  total_processed: number;
+  model_success_rate: number;
+  queue_backlog: number;
+  open_alerts: number;
+};
+
+export type MonitoringDatasourceMetric = {
+  datasource: string;
+  success_rate: number;
+  latency_ms: number;
+};
+
+export type MonitoringModelMetric = {
+  model: string;
+  calls: number;
+  avg_latency_ms: number;
+  error_rate: number;
+};
+
+export type MonitoringAlertRecord = {
+  severity: string;
+  type: string;
+  status: string;
+};
