@@ -1,0 +1,73 @@
+name: Release Check
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      run_alert_flow:
+        description: "Run alert lifecycle mutation during smoke check"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  release_check:
+    runs-on: windows-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Backend Dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ./backend
+
+      - name: Install Frontend Dependencies
+        shell: pwsh
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run Release Check
+        shell: pwsh
+        run: |
+          $shouldRunAlertFlow = $false
+          if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ inputs.run_alert_flow }}" -eq "true") {
+            $shouldRunAlertFlow = $true
+          }
+
+          if ($shouldRunAlertFlow) {
+            .\release-check.ps1 -RunAlertFlow
+          } else {
+            .\release-check.ps1
+          }
+
+      - name: Stop MVP Services
+        if: always()
+        shell: pwsh
+        run: .\stop-mvp.ps1
+
+      - name: Upload Release Check Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-check-artifacts
+          path: |
+            .release-check
+            .mvp-logs

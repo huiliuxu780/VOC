@@ -45,6 +45,11 @@ Run release checklist and include alert lifecycle mutation:
 .\release-check.ps1 -RunAlertFlow
 ```
 
+## CI
+
+- `MVP Smoke Check`: runs on `push/pull_request` to `main`
+- `Release Check`: runs on version tags (`v*`) or manually via GitHub Actions
+
 Default URLs:
 
 - Frontend: `http://127.0.0.1:5173`
