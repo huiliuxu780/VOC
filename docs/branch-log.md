@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `frontend/src/test/domTestUtils.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 为标签管理页新增“搜索命中高亮”DOM 回归用例；并在测试工具中新增 `changeInputValue`，采用原型 setter + `input/change` 事件触发，提升 React 受控输入测试稳定性。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 若选择器过于依赖文案或样式类，测试可能脆弱，后续重构时易误报失败。
-- **下一步：** 发起 PR 评审并合并；后续可在同一工具中补充 `blur/focus` 触发工具以覆盖更多表单交互场景。
+- **下一步：** 后续可在同一工具中补充 `blur/focus` 触发工具以覆盖更多表单交互场景。
 
 ---
 
