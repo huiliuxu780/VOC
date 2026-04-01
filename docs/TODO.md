@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Frontend key workflow tests completed)
+Last updated: 2026-04-02 (Design doc encoding baseline fixed)
 
 ## P0 - Core Delivery
 
@@ -38,7 +38,9 @@ Last updated: 2026-04-01 (Frontend key workflow tests completed)
 - [x] Unify frontend dropdown style with shared dark select component.
   Done on: 2026-04-01.
   Delivered: replace all native `<select>` usage with shared `Select` component and verify globally.
-- [ ] Fix encoding issues in design doc and keep one clean Chinese version.
+- [x] Fix encoding issues in design doc and keep one clean Chinese version.
+  Done on: 2026-04-02.
+  Delivered: verified `docs/voc-ai-labeling-platform-design.md` as UTF-8 clean Chinese baseline, added explicit encoding/canonical-version note to prevent future drift.
 - [ ] Add changelog/release notes hygiene (template + update discipline).
 - [ ] Add API contract snapshot checks to CI (schema drift guard).
 

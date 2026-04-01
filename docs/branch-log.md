@@ -35,6 +35,29 @@
 
 ---
 
+## docs/design-doc-encoding-fix
+
+- **用途：** 修复设计文档乱码并保留一份干净中文版本，提升文档可读性与可维护性
+- **任务类型：** 文档
+- **关联页面/模块：** `docs/voc-ai-labeling-platform-design.md`、`docs/TODO.md`
+- **基于分支：** main
+- **主要改动文件：**
+  - `docs/voc-ai-labeling-platform-design.md`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 将设计文档明确标记为 UTF-8 中文主版本，并在文档头部增加编码与唯一维护版本说明；同步更新 TODO，完成“修复编码问题并保留干净中文版”任务项。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：`Get-Content -Encoding utf8 docs/voc-ai-labeling-platform-design.md` 抽样检查标题与章节可读；`rg` 未发现常见乱码片段
+- **风险说明：** 终端若使用非 UTF-8 默认编码查看文件，仍可能出现显示乱码，需要明确使用 UTF-8 打开/查看。
+- **下一步：** 合并到 `main`，后续文档统一按 UTF-8 维护并以该文件作为中文主版本。
+
+---
+
 ## docs/shadcn-skills-sync
 
 - **用途：** 将 shadcn/ui 官方仓库中的 `skills/shadcn` 内容同步到本项目，供本仓库协作与开发参考
