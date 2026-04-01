@@ -58,6 +58,29 @@
 
 ---
 
+## docs/frontend-skill-governance
+
+- **用途：** 固化前端技能协同优先级，确保后续开发统一按 `ui-ux-pro-max + 组件体系规则 + shadcn` 执行
+- **任务类型：** 文档
+- **关联页面/模块：** 仓库前端开发规范（`AGENTS.md`、`docs/skills/shadcn-ui.md`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `AGENTS.md`
+  - `docs/skills/shadcn-ui.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在 `AGENTS.md` 新增“前端技能协同优先级（强制）”章节，明确 `ui-ux-pro-max` 负责设计决策、组件体系与 shadcn 规则负责实现落地，并约束禁止并行维护冲突组件体系；在 `docs/skills/shadcn-ui.md` 增补与 `ui-ux-pro-max` 的协同说明，保证仓库内策略一致。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：已核对 `AGENTS.md` 与 `docs/skills/shadcn-ui.md` 均包含协同优先级与执行约束
+- **风险说明：** 规则更新后若历史任务上下文仍沿用旧习惯，短期可能出现执行口径不一致，需要在后续任务中持续按新规则收敛。
+- **下一步：** 合并到 `main`，后续所有前端开发与优化默认按该协同优先级执行。
+
+---
+
 ## feature/frontend-workflow-tests
 
 - **用途：** 为前端关键页面流程补充自动化测试，覆盖核心交互与 API 联动行为
