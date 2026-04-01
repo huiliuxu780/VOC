@@ -5,6 +5,7 @@ from time import sleep
 
 from sqlalchemy import func, select
 
+from app.core.time_utils import utc_now
 from app.db.session import SessionLocal
 from app.models.runtime import JobRun, JobRunStage, RunFailureDetail
 
@@ -23,7 +24,7 @@ _FAILURE_ERROR_TYPES = ["timeout", "schema_mismatch", "label_empty", "parse_fail
 
 
 def _safe_now() -> datetime:
-    return datetime.utcnow()
+    return utc_now()
 
 
 def is_pipeline_run_active(run_id: str) -> bool:

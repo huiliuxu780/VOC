@@ -232,6 +232,34 @@
 
 ---
 
+## refactor/utcnow-fixture-hardening
+
+- **用途：** 消除后端 `datetime.utcnow` 弃用告警，并为 pytest 引入独立测试数据库 fixture
+- **任务类型：** 重构
+- **关联页面/模块：** 后端时间工具/模型默认时间、测试基础设施（`backend/tests/conftest.py`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/app/core/time_utils.py`
+  - `backend/app/models/*.py`
+  - `backend/app/api/v1/jobs.py`
+  - `backend/app/api/v1/monitoring.py`
+  - `backend/app/services/pipeline_runner.py`
+  - `backend/tests/conftest.py`
+  - `backend/tests/*.py`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 `app/core/time_utils.py` 统一 UTC 时间函数，并将后端模型/API/服务及相关测试中的 `datetime.utcnow` 全量替换为统一工具；新增 pytest 独立 sqlite fixture，按测试重置表结构，并在会话结束时显式释放引擎后清理临时数据库文件，避免 Windows 文件锁导致 teardown 失败。
+- **验证情况：**
+  - lint：不适用（后端 Python）
+  - tests：`python -m pytest tests -q` 通过（6 passed）
+  - type-check：不适用
+  - build：`python -m compileall app` 通过
+  - 手工验证：`rg "utcnow" backend/app backend/tests` 无命中，确认替换完成
+- **风险说明：** 测试数据库清理已加入重试与引擎释放，但在极端并发/异常中断场景下仍可能残留临时 sqlite 文件，需要周期性清理临时目录。
+- **下一步：** 发起 PR 进入评审，评审通过后合并到 `main` 并继续下一轮迭代。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面

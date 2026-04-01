@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import Session
 
+from app.core.time_utils import utc_now
 from app.db.session import get_db
 from app.models.config import DataSourceConfig, JobConfig
 from app.models.runtime import JobRun, JobRunStage, RunFailureDetail
@@ -259,7 +260,7 @@ def _seed_runtime_if_empty(db: Session) -> None:
         if job_id is None:
             continue
         for run in run_items:
-            started_at = datetime.fromisoformat(run["started_at"]) if run["started_at"] else datetime.utcnow()
+            started_at = datetime.fromisoformat(run["started_at"]) if run["started_at"] else utc_now()
             ended_at = datetime.fromisoformat(run["ended_at"]) if run["ended_at"] else None
             db.add(
                 JobRun(
@@ -304,7 +305,7 @@ def _seed_runtime_if_empty(db: Session) -> None:
 
 
 def _advance_running_runs(db: Session) -> None:
-    now = datetime.utcnow()
+    now = utc_now()
     running_runs = db.scalars(select(JobRun).where(JobRun.status == "running")).all()
     changed = False
 
@@ -514,7 +515,7 @@ def trigger_job(job_id: int, db: Session = Depends(get_db)) -> TriggerResponse:
     _get_job_or_404(db, job_id)
 
     run_id = f"RUN-{uuid4().hex[:10]}"
-    now = datetime.utcnow()
+    now = utc_now()
     db.add(
         JobRun(
             run_id=run_id,
@@ -636,7 +637,7 @@ def retry_run(run_id: str, db: Session = Depends(get_db)) -> dict:
         raise HTTPException(status_code=404, detail="run not found")
 
     new_run_id = f"RUN-{uuid4().hex[:10]}"
-    now = datetime.utcnow()
+    now = utc_now()
     db.add(
         JobRun(
             run_id=new_run_id,
@@ -673,7 +674,7 @@ def retry_single_failure(run_id: str, record_id: str, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="failure record not found")
 
     new_run_id = f"RUN-{uuid4().hex[:10]}"
-    now = datetime.utcnow()
+    now = utc_now()
     db.add(
         JobRun(
             run_id=new_run_id,

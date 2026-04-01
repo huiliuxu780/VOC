@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utc_now
 from app.db.session import Base
 
 
@@ -16,7 +17,7 @@ class JobRun(Base):
     total_input: Mapped[int] = mapped_column(Integer, default=0)
     success_count: Mapped[int] = mapped_column(Integer, default=0)
     failed_count: Mapped[int] = mapped_column(Integer, default=0)
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
@@ -89,4 +90,4 @@ class RunFailureDetail(Base):
     output_payload: Mapped[dict] = mapped_column(JSON, default=dict)
     retry_status: Mapped[str] = mapped_column(String(32), default="none")
     retry_run_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
