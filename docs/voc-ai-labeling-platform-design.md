@@ -1,5 +1,8 @@
 # 基于 LLM 的 VOC 消费者原始数据打标平台
 
+> 文档编码：UTF-8  
+> 中文主版本：`docs/voc-ai-labeling-platform-design.md`（唯一维护版本）
+
 ## 1. 信息架构
 
 ### 1.1 业务域划分
