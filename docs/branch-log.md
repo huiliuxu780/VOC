@@ -70,7 +70,7 @@
   - `docs/release-runbook.md`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增 `CHANGELOG.md` 作为变更事实源，新增 `docs/release-notes-template.md` 作为发版说明模板；更新 `docs/release-runbook.md` 为“先更新 changelog，再执行发布校验与打 tag”的流程；在 `README.md` 增补 changelog 与 release notes 模板入口，并在 `docs/TODO.md` 回写该任务完成状态。
 - **验证情况：**
   - lint：不适用
@@ -79,7 +79,7 @@
   - build：不适用
   - 手工验证：已核对模板字段完整性，`README.md`/`release-runbook.md` 引用路径可达，发布流程顺序与模板一致
 - **风险说明：** 若后续迭代未持续维护 `[Unreleased]`，仍会出现发版信息补录成本。
-- **下一步：** 合并到 `main` 并在下一次发布前按新流程进行一次实战验证。
+- **下一步：** 在下一次发布前按新流程进行一次实战验证，并在 `CHANGELOG.md` 持续维护 `[Unreleased]`。
 
 ---
 
