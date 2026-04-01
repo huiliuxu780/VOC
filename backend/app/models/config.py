@@ -3,6 +3,7 @@
 from sqlalchemy import Boolean, DateTime, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utc_now
 from app.db.session import Base
 
 
@@ -16,8 +17,8 @@ class DataSourceConfig(Base):
     owner: Mapped[str] = mapped_column(String(64), default="unknown")
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     extra_config: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
 class DataSourceMappingConfig(Base):
@@ -27,7 +28,7 @@ class DataSourceMappingConfig(Base):
     datasource_id: Mapped[int] = mapped_column(Integer)
     version: Mapped[str] = mapped_column(String(32), default="v1")
     mapping_rules: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
 class InternalFieldDefinition(Base):

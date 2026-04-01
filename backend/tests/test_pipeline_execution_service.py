@@ -1,21 +1,21 @@
 ﻿from __future__ import annotations
 
-from datetime import datetime
 from time import sleep
 from uuid import uuid4
 
 from sqlalchemy import desc, func, select
 
 from app.api.v1.jobs import DEFAULT_STAGES, list_jobs, retry_run, retry_single_failure, trigger_job
+from app.core.time_utils import utc_now
 from app.db.init_db import init_db
 from app.db.session import SessionLocal
 from app.models.runtime import JobRun, JobRunStage, RunFailureDetail
 
 
 def _wait_for_terminal_run(run_id: str, timeout_seconds: float = 15.0, step_seconds: float = 0.25) -> JobRun:
-    deadline = datetime.utcnow().timestamp() + timeout_seconds
+    deadline = utc_now().timestamp() + timeout_seconds
     last_status = "<missing>"
-    while datetime.utcnow().timestamp() < deadline:
+    while utc_now().timestamp() < deadline:
         with SessionLocal() as db:
             run = db.scalar(select(JobRun).where(JobRun.run_id == run_id))
             if run is not None:
@@ -93,8 +93,8 @@ def test_retry_single_failure_schedules_and_completes_retry_run() -> None:
                 total_input=1,
                 success_count=0,
                 failed_count=1,
-                started_at=datetime.utcnow(),
-                ended_at=datetime.utcnow(),
+                started_at=utc_now(),
+                ended_at=utc_now(),
             )
         )
         for stage_name in DEFAULT_STAGES:

@@ -3,6 +3,7 @@
 from sqlalchemy import DateTime, Float, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utc_now
 from app.db.session import Base
 
 
@@ -15,7 +16,7 @@ class ModelUsageStats(Base):
     token_used: Mapped[int] = mapped_column(Integer, default=0)
     avg_latency_ms: Mapped[float] = mapped_column(Float, default=0)
     error_rate: Mapped[float] = mapped_column(Float, default=0)
-    snapshot_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    snapshot_time: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
 class DataSourceStats(Base):
@@ -26,7 +27,7 @@ class DataSourceStats(Base):
     success_rate: Mapped[float] = mapped_column(Float, default=1)
     failed_count: Mapped[int] = mapped_column(Integer, default=0)
     throughput: Mapped[int] = mapped_column(Integer, default=0)
-    snapshot_time: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    snapshot_time: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
 class QueueHealthStats(Base):
@@ -57,4 +58,4 @@ class AlertRecord(Base):
     severity: Mapped[str] = mapped_column(String(8), default="P3")
     detail: Mapped[dict] = mapped_column(JSON, default=dict)
     status: Mapped[str] = mapped_column(String(16), default="open")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)

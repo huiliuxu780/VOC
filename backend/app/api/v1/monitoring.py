@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
+from app.core.time_utils import utc_now, utc_now_iso_z
 from app.db.session import get_db
 from app.models.monitoring import AlertRecord, ApiHealthStats, QueueHealthStats
 from app.models.runtime import JobRun
@@ -18,13 +19,13 @@ ALERT_TRANSITIONS = {
 
 
 def _iso_now() -> str:
-    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+    return utc_now_iso_z()
 
 
 def _build_hourly_trend() -> list[TrendPoint]:
-    now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    now = utc_now().replace(minute=0, second=0, microsecond=0)
     baseline = [220, 280, 250, 320, 300, 355]
-    minute_factor = datetime.utcnow().minute % 7
+    minute_factor = utc_now().minute % 7
     points: list[TrendPoint] = []
     for index, value in enumerate(baseline):
         hour = now - timedelta(hours=(len(baseline) - 1 - index))
