@@ -55,6 +55,14 @@ export function findButtonByText(container: HTMLElement, text: string): HTMLButt
   return button as HTMLButtonElement;
 }
 
+export function findLinkByText(container: HTMLElement, text: string): HTMLAnchorElement {
+  const link = Array.from(container.querySelectorAll("a")).find((node) => node.textContent?.trim().includes(text));
+  if (!link) {
+    throw new Error(`link not found: ${text}`);
+  }
+  return link as HTMLAnchorElement;
+}
+
 export async function clickElement(element: HTMLElement): Promise<void> {
   await act(async () => {
     element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
