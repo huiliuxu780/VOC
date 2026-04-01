@@ -22,6 +22,15 @@ export async function apiPost<T>(path: string, payload?: unknown): Promise<T> {
   return parseResponse<T>(response);
 }
 
+export async function apiPut<T>(path: string, payload: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  return parseResponse<T>(response);
+}
+
 export type DataSource = {
   id: number;
   name: string;
@@ -155,4 +164,35 @@ export type MonitoringAlertRecord = {
 export type MonitoringTrendPoint = {
   t: string;
   run: number;
+};
+
+export type PromptRecord = {
+  id: number;
+  label_node_id: number;
+  name: string;
+  version: string;
+  status: string;
+  system_prompt: string;
+  user_prompt_template: string;
+};
+
+export type PromptUpsertPayload = {
+  label_node_id: number;
+  name: string;
+  version: string;
+  status?: string;
+  system_prompt: string;
+  user_prompt_template: string;
+};
+
+export type PromptTestResponse = {
+  prompt_id: number;
+  prompt_name: string;
+  prompt_version: string;
+  input: Record<string, unknown>;
+  output: {
+    label: string;
+    score: number;
+    reason: string;
+  };
 };

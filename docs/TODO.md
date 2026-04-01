@@ -1,15 +1,15 @@
 # Project TODO
 
-Last updated: 2026-04-01
+Last updated: 2026-04-01 (Prompt flow completed)
 
 ## P0 - Core Delivery
 
 - [ ] Persist config modules to database instead of in-memory arrays.
   Scope: `datasource`, `labels`, `prompts`, `jobs` config CRUD.
-  Current state: still using in-memory collections in API modules.
-- [ ] Complete end-to-end Prompt management flow.
-  Scope: backend CRUD + publish/test + frontend integration.
-  Current state: Prompt page is mostly local form state.
+  Progress: `prompts` completed; `datasource/labels/jobs config` still in-memory.
+- [x] Complete end-to-end Prompt management flow.
+  Done on: 2026-04-01.
+  Delivered: backend DB CRUD + publish/test + frontend list/editor/test integration.
 - [ ] Complete end-to-end Label management flow.
   Scope: label tree CRUD + frontend tree/detail interaction.
   Current state: static seed list on frontend.
