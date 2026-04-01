@@ -1,0 +1,103 @@
+﻿# 分支记录
+
+用于记录每个分支的用途、范围、状态、验证情况和后续动作。
+
+状态枚举说明：
+- `planned`：已规划
+- `in_progress`：进行中
+- `blocked`：阻塞中
+- `review_ready`：可提审
+- `merged`：已合并
+- `abandoned`：已废弃
+
+---
+
+## 模板
+
+## `<branch-name>`
+
+- **用途：**
+- **任务类型：** 功能开发 / 问题修复 / 重构 / 文档 / 杂项 / 实验 / 紧急修复
+- **关联页面/模块：**
+- **基于分支：** main
+- **主要改动文件：**
+  - `path/to/file`
+- **当前状态：** in_progress
+- **改动说明：**
+- **验证情况：**
+  - lint：
+  - tests：
+  - type-check：
+  - build：
+  - 手工验证：
+- **风险说明：**
+- **下一步：**
+
+---
+
+## docs/branch-workflow
+
+- **用途：** 为仓库建立长期可复用的分支开发规范、分支记录机制和 PR 模板，保证后续 Codex 与人工协作都按统一流程执行
+- **任务类型：** 文档
+- **关联页面/模块：** 仓库开发流程
+- **基于分支：** main
+- **主要改动文件：**
+  - `AGENTS.md`
+  - `docs/branch-log.md`
+  - `.github/pull_request_template.md`
+  - `README.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增仓库级代理规则文件、中文分支记录模板以及中文 PR 模板，并在 README 顶部补充 AGENTS.md 约束提示，固化分支开发、记录、验证、汇报方式。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：已逐项检查字段完整性与可执行性
+- **风险说明：** 后续若团队成员未持续更新分支记录，实际执行效果会打折扣。
+- **下一步：** 将这四份文件提交到仓库，并在后续任务中按本规范执行。
+
+---
+
+## feature/tag-hierarchy-page
+
+- **用途：** 搭建 VOC 管理后台的标签层级管理页面
+- **任务类型：** 功能开发
+- **关联页面/模块：** 标签管理
+- **基于分支：** main
+- **主要改动文件：**
+  - `src/pages/tag-hierarchy.tsx`
+  - `src/components/tag-tree.tsx`
+  - `src/components/tag-detail-panel.tsx`
+  - `src/components/tag-rule-panel.tsx`
+- **当前状态：** in_progress
+- **改动说明：** 已完成三栏式页面结构，包含标签树、标签详情编辑区和语义规则区域。
+- **验证情况：**
+  - lint：未执行
+  - tests：未执行
+  - type-check：未执行
+  - build：未执行
+  - 手工验证：已完成页面结构走查
+- **风险说明：** 尚未实现拖拽调整层级与真实接口联调。
+- **下一步：** 接入 mock 数据并补充保存、发布交互。
+
+---
+
+## fix/sidebar-scroll-clipping
+
+- **用途：** 修复后台左侧导航菜单过长时的滚动裁切问题
+- **任务类型：** 问题修复
+- **关联页面/模块：** 布局外壳 / Sidebar
+- **基于分支：** main
+- **主要改动文件：**
+  - `src/components/layout/sidebar.tsx`
+- **当前状态：** review_ready
+- **改动说明：** 调整容器高度与 overflow 行为，确保长菜单可正常滚动。
+- **验证情况：**
+  - lint：本地通过
+  - tests：不适用
+  - type-check：本地通过
+  - build：本地通过
+  - 手工验证：桌面端已验证
+- **风险说明：** 移动端展示仍需单独验证。
+- **下一步：** 发起 PR，待 UI 检查后合并。

@@ -1,26 +1,306 @@
-# Global Coding Preferences
+﻿# AGENTS.md
 
-## Frontend Default Rule
-For any frontend/UI task (web, mobile, dashboard, landing page, component design), always apply the `ui-ux-pro-max` skill first.
+## 作用说明
+本仓库采用 **基于分支的开发方式**，并要求对每个有意义的分支进行记录。
 
-## Frontend Quality Bar
-- Follow the UI/UX Pro Max design system and reasoning workflow.
-- Prefer intentional visual direction over boilerplate layouts.
-- Ensure responsive behavior on desktop and mobile.
-- Keep accessibility and readability as baseline requirements.
+所有非微小、非临时性的开发任务，必须在独立任务分支上完成。  
+**不要直接在 `main` 分支上进行未完成的功能开发。**
 
-## Project Setup Behavior
-If a project does not yet contain the local UIPro assets, run `npm exec --package uipro-cli -- uipro init --ai codex` in that project before implementing major UI work.
+本文件放在仓库根目录，对整个仓库生效。  
+如果某个子目录下存在更深层的 `AGENTS.md`，则该子目录以内以更深层规则为准。
 
-## Fixed Progress Protocol (For Long-Running Tasks)
-- Start update: before work begins, report target, current step, and immediate next action.
-- In-progress updates: after each key action, report what was done and what is next.
-- Cadence: provide a short status update at least every 30-60 seconds during long chains.
-- Blocker update: if blocked, report blocker reason, what has been tried, and the fallback options.
-- Finish update: summarize changed files, validation results, and remaining TODOs.
+---
 
-## Progress Message Template
-- `[Progress X%] Current action: <what I am doing>. Done: <what finished>. Next: <next step>.`
+## 一、核心开发规则
 
-## Escalation Trigger
-- If an action has non-obvious risk (data loss, irreversible operation, major architecture tradeoff), pause and align before execution.
+### 1. 稳定分支
+- `main` 是稳定分支。
+- 只有经过验证、适合合并、可以交付审查的代码，才应该进入 `main`。
+- 不要直接在 `main` 上做功能开发。
+- 只有在用户明确要求，且改动非常小、非常安全时，才允许直接在 `main` 上做修改。
+
+### 2. 必须使用任务分支的场景
+以下情况必须创建或使用独立分支：
+- 新功能开发
+- Bug 修复
+- 重构
+- 实验性改动
+- 会影响实现逻辑的文档改动
+- 有明确页面/模块范围的 UI 改动
+
+### 3. 分支命名规范
+允许使用以下前缀：
+
+- `feature/`
+- `fix/`
+- `refactor/`
+- `docs/`
+- `chore/`
+- `experiment/`
+- `hotfix/`
+
+推荐格式：
+
+- `feature/<模块>-<任务>`
+- `fix/<模块>-<问题>`
+- `refactor/<模块>-<改动>`
+- `docs/<主题>`
+- `chore/<主题>`
+- `experiment/<主题>`
+- `hotfix/<主题>`
+
+示例：
+- `feature/tag-management-three-panel-layout`
+- `feature/prompt-version-panel`
+- `fix/tag-tree-selection`
+- `refactor/layout-shell`
+- `docs/branch-workflow`
+
+### 4. 分支范围要求
+- 一个分支只做一件主要事情
+- 不要在同一个分支中混入无关改动
+- 优先保持改动小、清晰、便于审查
+- 除非任务明确要求，否则不要顺手做大面积重构
+
+---
+
+## 二、必须维护分支记录
+
+必须维护以下文件：
+
+`docs/branch-log.md`
+
+要求：
+- 每个活跃分支、可提审分支、已合并分支、阻塞分支、废弃分支，都应有记录
+- 开始做任务时更新一次
+- 范围变化时更新一次
+- 完成、暂停、阻塞时再更新一次
+
+### 分支记录必须包含以下字段
+- 分支名
+- 用途
+- 任务类型
+- 关联页面/模块
+- 基于分支
+- 主要改动文件
+- 当前状态
+- 改动说明
+- 验证情况
+- 风险说明
+- 下一步
+
+请使用 `docs/branch-log.md` 中定义的模板格式。
+
+---
+
+## 三、执行任务时必须遵守的流程
+
+### 第 1 步：先检查当前分支
+在开始改代码之前，必须先判断：
+- 当前所在分支是什么
+- 当前分支是否符合这次任务
+- 如果不符合，先创建或切换到正确的任务分支
+
+**不要在 `main` 上默默进行功能开发。**
+
+### 第 2 步：先登记分支记录
+在开始实现前，或实现刚开始时：
+- 在 `docs/branch-log.md` 中新增或更新该分支记录
+- 将状态设为 `in_progress`
+- 写清楚用途、范围、预计改动文件或模块
+
+### 第 3 步：再开始实现
+只针对当前任务做必要改动。  
+不要修改与任务无关的代码。
+
+### 第 4 步：做验证
+有条件时必须执行合适的验证，例如：
+- lint
+- tests
+- type-check
+- build
+- 手工验证
+
+如果仓库没有这些能力，也要明确说明，并补充手工验证结果。
+
+### 第 5 步：更新最终状态
+在任务结束前，必须回写 `docs/branch-log.md`。  
+状态只能使用以下枚举之一：
+
+- `planned`
+- `in_progress`
+- `blocked`
+- `review_ready`
+- `merged`
+- `abandoned`
+
+### 第 6 步：输出统一格式的结果说明
+当汇报任务完成情况时，必须包含：
+- 分支
+- 用途
+- 做了哪些改动
+- 改了哪些文件
+- 做了哪些验证
+- 当前状态
+- 下一步建议
+
+格式见下文“统一输出格式”。
+
+---
+
+## 四、提交规范（Commit Rules）
+
+提交信息使用英文规范，推荐采用 conventional commits：
+
+- `feat(scope): ...`
+- `fix(scope): ...`
+- `refactor(scope): ...`
+- `docs(scope): ...`
+- `chore(scope): ...`
+
+示例：
+- `feat(tag): add hierarchy management layout`
+- `fix(tree): correct nested selection behavior`
+- `refactor(layout): simplify sidebar shell`
+- `docs(workflow): add branch tracking rules`
+
+要求：
+- commit 内容要聚焦
+- 信息要具体
+- 不要使用模糊提交信息，例如：
+  - `update`
+  - `fix stuff`
+  - `changes`
+- 不要把无关修改塞进同一个 commit
+
+---
+
+## 五、达到可提审状态前必须满足
+
+在声明“可提审”之前，必须确认以下事项：
+
+- 当前工作不是直接做在 `main` 上
+- 分支名符合任务范围
+- `docs/branch-log.md` 已更新
+- 改动范围清晰、可审查
+- 做过相关验证（如果条件允许）
+- 已记录已知风险和后续事项
+
+推荐 PR 标题格式：
+- `feat(tag): add hierarchy management page`
+- `fix(sidebar): correct overflow clipping`
+- `refactor(prompt): simplify editor state`
+
+---
+
+## 六、统一输出格式
+
+在汇报任务完成情况时，必须使用以下结构：
+
+### Branch
+`<branch-name>`
+
+### Purpose
+<一句或两句，说明这个分支是干什么的>
+
+### Changes Made
+- ...
+- ...
+- ...
+
+### Files Changed
+- ...
+- ...
+- ...
+
+### Validation
+- lint:
+- tests:
+- type-check:
+- build:
+- manual check:
+
+### Status
+`planned / in_progress / blocked / review_ready / merged / abandoned`
+
+### Next Step
+<建议的下一步动作>
+
+---
+
+## 七、前端 / 管理后台相关规则
+
+对于前端页面、管理后台、控制台类任务，额外要求如下：
+
+- 除非任务明确要求重构，否则优先保持现有布局方式
+- 优先抽取可复用组件，不要大量复制粘贴 UI
+- 不要顺手改无关样式
+- 保持整体视觉语言一致
+- 如果新增页面、面板、组件，要在总结中说明清楚
+
+如果是后台管理页：
+- 先明确页面用途
+- 保持信息架构清晰
+- 在合适情况下分离“导航区 / 编辑区 / 调试区”
+- 没有明确要求时，不要强行做 dashboard 化指标大屏
+
+对于暗黑 SaaS 风格页面：
+- 保持克制，不要堆太多颜色
+- 以弱边框、强层级、清晰间距为主
+- 强调色适量使用
+- 不做花哨但无信息价值的装饰
+
+---
+
+## 八、安全改动原则
+
+- 不要大面积删除代码，除非有必要且已说明原因
+- 不要随意重命名重要文件或目录，除非任务要求
+- 不要修改无关文件
+- 优先做小而清晰的改动
+- 在可行时尽量保持兼容性
+- 如果不确定，选择更保守、更易审查的实现方案
+
+---
+
+## 九、文档更新规则
+
+如果任务影响以下内容，应同步更新文档：
+- 功能行为
+- 使用方式
+- 项目结构
+- 开发流程
+- 模块说明
+
+至少需要考虑是否更新：
+- `README.md`
+- 对应模块文档
+- `docs/branch-log.md`
+
+---
+
+## 十、微小改动的例外
+
+只有在以下条件全部满足时，才允许继续使用当前分支而不新建分支：
+
+- 当前分支本来就对应这项任务
+- 本次改动与当前分支用途直接相关
+- `docs/branch-log.md` 已同步更新
+
+否则，必须新建分支。
+
+---
+
+## 十一、当规则冲突时的优先级
+
+优先级从高到低如下：
+
+1. 系统级指令
+2. 开发者级指令
+3. 当前用户在本次任务中的明确要求
+4. 本文件 `AGENTS.md`
+5. 更深层目录下的 `AGENTS.md`（仅对子目录局部生效）
+
+如果发生冲突：
+- 优先服从高优先级指令
+- 如有必要，在最终总结中说明偏离原因
