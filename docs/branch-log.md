@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 为搜索结果列表新增 active row 视觉态（绿色边框/轻高亮 + `active` 标记），并增加 `data-label-id` / `data-active-match` 标记用于稳定回归断言；同步修复关键词提示分隔符显示异常（统一为 ASCII `|`）。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 活动态样式如果与既有选中态冲突，可能导致视觉层级不清晰。
-- **下一步：** 发起 PR 评审并合并；后续可补充“活动项自动滚动到可视区域”的键盘可用性增强。
+- **下一步：** 已合并到 `main`；后续可补充“活动项自动滚动到可视区域”的键盘可用性增强。
 
 ---
 
