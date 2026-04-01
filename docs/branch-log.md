@@ -196,7 +196,7 @@
   - `backend/tests/test_pipeline_execution_service.py`
   - `docs/branch-log.md`
   - `docs/TODO.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增后端自动化测试文件，覆盖 staged pipeline 的关键链路：`trigger_job` 自动完成、`retry_run` 自动完成、`retry_single_failure` 关联字段更新与自动完成。
 - **验证情况：**
   - lint：不适用（后端 Python）
@@ -205,7 +205,7 @@
   - build：`python -m compileall app` 已通过（沿用上一轮结果）
   - 手工验证：不适用（本轮以自动化测试为主）
 - **风险说明：** 若测试直接使用本地 sqlite 文件，存在历史数据影响断言的风险，需要使用唯一 run_id/record_id 降低耦合。
-- **下一步：** 发起 PR；后续可补充 fixture 隔离测试数据库，进一步降低与历史数据耦合。
+- **下一步：** 后续可补充 fixture 隔离测试数据库，进一步降低与历史数据耦合，并扩展到 monitoring/settings 新增 API 测试。
 
 ---
 
