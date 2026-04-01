@@ -71,6 +71,32 @@
 
 ---
 
+## feature/frontend-dom-interaction-tests
+
+- **用途：** 为 Job / Prompt 管理页面补充 DOM 交互级测试，覆盖用户点击行为与请求触发
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/JobManagementPage.tsx`、`frontend/src/pages/PromptManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/src/test/domTestUtils.ts`
+  - `frontend/src/pages/JobManagementPage.dom.test.ts`
+  - `frontend/src/pages/PromptManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 `happy-dom` 轻量 DOM 测试环境，并补充 Job/Prompt 两个高价值页面的交互级测试，覆盖按钮点击后的请求触发与状态提示；同时新增可复用 `domTestUtils` 统一渲染、等待与点击行为，降低页面级用例样板代码。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test` 通过（7 files, 16 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：已检查 Trigger / Publish 等关键交互在测试中完成请求触发断言
+- **风险说明：** 当前仍以页面局部交互测试为主，尚未覆盖跨页面路由联动与真实网络层集成。
+- **下一步：** 发起 PR 评审并合并；下一轮补 `Monitoring/Label` 的 DOM 交互回归用例。
+
+---
+
 ## docs/branch-workflow
 
 - **用途：** 为仓库建立长期可复用的分支开发规范、分支记录机制和 PR 模板，保证后续 Codex 与人工协作都按统一流程执行
