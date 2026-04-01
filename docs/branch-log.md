@@ -97,6 +97,29 @@
 
 ---
 
+## feature/frontend-dom-monitoring-label
+
+- **用途：** 为 Monitoring / Label 页面补齐 DOM 交互回归测试
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/MonitoringPage.tsx`、`frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/MonitoringPage.dom.test.ts`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 为 `MonitoringPage` 新增告警 Ack 交互回归测试（覆盖按钮点击触发 API + 列表状态刷新）；为 `LabelManagementPage` 新增新建保存测试与未保存标签的 Move 禁用态测试，确保关键交互在 DOM 层可回归。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test` 通过（9 files, 19 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：已检查 `Ack/New Label/Move disabled` 关键交互在测试中完成断言
+- **风险说明：** 当前 DOM 测试仍以模块内交互为主，尚未覆盖路由切换与跨页面状态联动。
+- **下一步：** 发起 PR 评审并合并；后续可补全路由级集成回归测试。
+
+---
+
 ## docs/branch-workflow
 
 - **用途：** 为仓库建立长期可复用的分支开发规范、分支记录机制和 PR 模板，保证后续 Codex 与人工协作都按统一流程执行
