@@ -45,10 +45,20 @@ Run release checklist and include alert lifecycle mutation:
 .\release-check.ps1 -RunAlertFlow
 ```
 
+Prepare/create release tag:
+
+```powershell
+.\release-tag.ps1 -Version v0.2.0 -RunReleaseCheck -DryRun
+.\release-tag.ps1 -Version v0.2.0 -RunReleaseCheck
+.\release-tag.ps1 -Version v0.2.0 -PushTag
+```
+
 ## CI
 
 - `MVP Smoke Check`: runs on `push/pull_request` to `main`
 - `Release Check`: runs on version tags (`v*`) or manually via GitHub Actions
+
+Release runbook: `docs/release-runbook.md`
 
 Default URLs:
 
