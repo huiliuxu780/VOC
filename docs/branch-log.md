@@ -45,7 +45,7 @@
   - `docs/skills/shadcn/*`
   - `docs/skills/shadcn-ui.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 已从 `https://github.com/shadcn-ui/ui/tree/main/skills/shadcn` 同步官方技能目录到 `docs/skills/shadcn`（含 `SKILL.md`、`rules`、`agents`、`assets`、`evals` 及辅助说明文档），并新增 `docs/skills/shadcn/SYNC.md` 记录上游来源与同步版本；同时在 `docs/skills/shadcn-ui.md` 增补本地镜像入口说明。
 - **验证情况：**
   - lint：不适用
@@ -54,7 +54,7 @@
   - build：不适用
   - 手工验证：已核对 `docs/skills/shadcn` 目录完整性（`SKILL.md`、`rules/*`、`agents/openai.yml`、`assets/*`、`evals/evals.json`）以及 `SYNC.md` 上游 commit 记录
 - **风险说明：** 该目录为一次性镜像快照，后续上游更新不会自动同步，需在新任务中手工更新并刷新 `SYNC.md`。
-- **下一步：** 合并到 `main`，后续如需升级以 `SYNC.md` 中的来源链接和 commit 为基线执行增量同步。
+- **下一步：** 后续如需升级以 `SYNC.md` 中的来源链接和 commit 为基线执行增量同步。
 
 ---
 
