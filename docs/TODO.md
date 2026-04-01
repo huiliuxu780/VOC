@@ -20,8 +20,9 @@ Last updated: 2026-04-01 (Pipeline designer flow completed)
 
 ## P1 - Platform Capability
 
-- [ ] Implement missing APIs defined in design doc.
-  Candidates: `/monitoring/queues`, `/monitoring/apis`, `/settings/models`.
+- [x] Implement missing APIs defined in design doc.
+  Done on: 2026-04-01.
+  Delivered: `/monitoring/queues` + `/monitoring/apis` + `/settings/models` (`GET/PUT`) implemented and routed.
 - [ ] Replace pipeline mock with staged execution service.
   Current state: `run_pipeline_mock` placeholder.
 - [ ] Add backend unit/integration tests for critical APIs.

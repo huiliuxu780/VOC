@@ -10,6 +10,7 @@ from app.schemas.job import (
 from app.schemas.label import LabelNodeIn, LabelNodeOut
 from app.schemas.monitoring import DashboardMetrics
 from app.schemas.prompt import PromptConfigIn, PromptConfigOut
+from app.schemas.settings import ModelConfigBulkUpdate, ModelConfigItem, ModelConfigUpdateItem
 
 __all__ = [
     "DataSourceCreate",
@@ -26,4 +27,7 @@ __all__ = [
     "JobPipelineConfigUpdate",
     "TriggerResponse",
     "DashboardMetrics",
+    "ModelConfigItem",
+    "ModelConfigUpdateItem",
+    "ModelConfigBulkUpdate",
 ]

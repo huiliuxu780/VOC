@@ -5,7 +5,7 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.monitoring import AlertRecord
+from app.models.monitoring import AlertRecord, ApiHealthStats, QueueHealthStats
 from app.models.runtime import JobRun
 from app.schemas.monitoring import DashboardMetrics, TrendPoint
 
@@ -98,8 +98,40 @@ def _seed_alerts_if_empty(db: Session) -> None:
     db.commit()
 
 
+def _seed_queue_health_if_empty(db: Session) -> None:
+    count = int(db.scalar(select(func.count()).select_from(QueueHealthStats)) or 0)
+    if count > 0:
+        return
+
+    db.add_all(
+        [
+            QueueHealthStats(queue_name="voc_raw_comment", backlog=1294, consumer_lag=182, status="warning"),
+            QueueHealthStats(queue_name="voc_analysis_task", backlog=184, consumer_lag=27, status="healthy"),
+            QueueHealthStats(queue_name="voc_retry_queue", backlog=39, consumer_lag=6, status="healthy"),
+        ]
+    )
+    db.commit()
+
+
+def _seed_api_health_if_empty(db: Session) -> None:
+    count = int(db.scalar(select(func.count()).select_from(ApiHealthStats)) or 0)
+    if count > 0:
+        return
+
+    db.add_all(
+        [
+            ApiHealthStats(api_name="llm.classify", success_rate=0.981, p95_latency_ms=1360, status="healthy"),
+            ApiHealthStats(api_name="llm.relevance", success_rate=0.972, p95_latency_ms=1180, status="healthy"),
+            ApiHealthStats(api_name="embedding.similarity", success_rate=0.953, p95_latency_ms=890, status="warning"),
+        ]
+    )
+    db.commit()
+
+
 def _refresh_monitoring(db: Session) -> None:
     _seed_alerts_if_empty(db)
+    _seed_queue_health_if_empty(db)
+    _seed_api_health_if_empty(db)
 
 
 def _normalize_detail(detail: dict | None) -> dict:
@@ -189,6 +221,36 @@ def model_metrics() -> list[dict]:
     return [
         {"model": "gpt-4.1-mini", "calls": 42210, "avg_latency_ms": 1240, "error_rate": 0.019},
         {"model": "deepseek-v3", "calls": 12904, "avg_latency_ms": 920, "error_rate": 0.023},
+    ]
+
+
+@router.get("/queues")
+def queue_health_metrics(db: Session = Depends(get_db)) -> list[dict]:
+    _refresh_monitoring(db)
+    rows = db.scalars(select(QueueHealthStats).order_by(desc(QueueHealthStats.id))).all()
+    return [
+        {
+            "queue": row.queue_name,
+            "backlog": row.backlog,
+            "consumer_lag": row.consumer_lag,
+            "status": row.status,
+        }
+        for row in rows
+    ]
+
+
+@router.get("/apis")
+def api_health_metrics(db: Session = Depends(get_db)) -> list[dict]:
+    _refresh_monitoring(db)
+    rows = db.scalars(select(ApiHealthStats).order_by(desc(ApiHealthStats.id))).all()
+    return [
+        {
+            "api": row.api_name,
+            "success_rate": row.success_rate,
+            "p95_latency_ms": row.p95_latency_ms,
+            "status": row.status,
+        }
+        for row in rows
     ]
 
 
