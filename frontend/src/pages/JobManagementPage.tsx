@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Panel } from "../components/ui/Panel";
+import { Select } from "../components/ui/Select";
 import {
   apiGet,
   apiPost,
@@ -554,58 +555,56 @@ export function JobManagementPage() {
                 </div>
 
                 <div className="mb-2 grid grid-cols-2 gap-2 text-xs">
-                  <select
+                  <Select
                     value={failureCategoryFilter}
-                    onChange={(e) => {
-                      setFailureCategoryFilter(e.target.value);
+                    onChange={(value) => {
+                      setFailureCategoryFilter(value);
                       setFailurePage(1);
                     }}
-                    className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-                  >
-                    <option value="all">Category: all</option>
-                    <option value="system_error">system_error</option>
-                    <option value="model_error">model_error</option>
-                    <option value="business_error">business_error</option>
-                    <option value="transient_error">transient_error</option>
-                  </select>
-                  <select
+                    triggerClassName="py-1.5 text-xs"
+                    options={[
+                      { value: "all", label: "Category: all" },
+                      { value: "system_error", label: "system_error" },
+                      { value: "model_error", label: "model_error" },
+                      { value: "business_error", label: "business_error" },
+                      { value: "transient_error", label: "transient_error" }
+                    ]}
+                  />
+                  <Select
                     value={failureNodeFilter}
-                    onChange={(e) => {
-                      setFailureNodeFilter(e.target.value);
+                    onChange={(value) => {
+                      setFailureNodeFilter(value);
                       setFailurePage(1);
                     }}
-                    className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-                  >
-                    {availableNodeFilters.map((node) => (
-                      <option key={node} value={node}>
-                        Node: {node}
-                      </option>
-                    ))}
-                  </select>
-                  <select
+                    triggerClassName="py-1.5 text-xs"
+                    options={availableNodeFilters.map((node) => ({ value: node, label: `Node: ${node}` }))}
+                  />
+                  <Select
                     value={failureSortBy}
-                    onChange={(e) => {
-                      setFailureSortBy(e.target.value as FailureSortField);
+                    onChange={(value) => {
+                      setFailureSortBy(value as FailureSortField);
                       setFailurePage(1);
                     }}
-                    className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-                  >
-                    <option value="record_id">Sort: record_id</option>
-                    <option value="category">Sort: category</option>
-                    <option value="node">Sort: node</option>
-                    <option value="error_type">Sort: error_type</option>
-                  </select>
-                  <select
+                    triggerClassName="py-1.5 text-xs"
+                    options={[
+                      { value: "record_id", label: "Sort: record_id" },
+                      { value: "category", label: "Sort: category" },
+                      { value: "node", label: "Sort: node" },
+                      { value: "error_type", label: "Sort: error_type" }
+                    ]}
+                  />
+                  <Select
                     value={failureSortOrder}
-                    onChange={(e) => {
-                      setFailureSortOrder(e.target.value as FailureSortOrder);
+                    onChange={(value) => {
+                      setFailureSortOrder(value as FailureSortOrder);
                       setFailurePage(1);
                     }}
-                    className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-                  >
-                    <option value="asc">Order: asc</option>
-                    <option value="desc">Order: desc</option>
-                  </select>
+                    triggerClassName="py-1.5 text-xs"
+                    options={[
+                      { value: "asc", label: "Order: asc" },
+                      { value: "desc", label: "Order: desc" }
+                    ]}
+                  />
                 </div>
 
                 <div className="space-y-2">

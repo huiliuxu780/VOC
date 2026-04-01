@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Panel } from "../components/ui/Panel";
+import { Select } from "../components/ui/Select";
 import {
   apiGet,
   apiPost,
@@ -265,26 +266,30 @@ export function MonitoringPage() {
         description="filter, operate, and trace alert lifecycle"
         rightSlot={
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <select
+            <Select
               value={alertStatusFilter}
-              onChange={(event) => setAlertStatusFilter(event.target.value as AlertStatusFilter)}
-              className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-            >
-              <option value="all">status: all</option>
-              <option value="open">status: open</option>
-              <option value="ack">status: ack</option>
-              <option value="resolved">status: resolved</option>
-            </select>
-            <select
+              onChange={(value) => setAlertStatusFilter(value as AlertStatusFilter)}
+              className="w-[160px]"
+              triggerClassName="py-1 text-xs"
+              options={[
+                { value: "all", label: "status: all" },
+                { value: "open", label: "status: open" },
+                { value: "ack", label: "status: ack" },
+                { value: "resolved", label: "status: resolved" }
+              ]}
+            />
+            <Select
               value={alertSeverityFilter}
-              onChange={(event) => setAlertSeverityFilter(event.target.value as AlertSeverityFilter)}
-              className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
-            >
-              <option value="all">severity: all</option>
-              <option value="P1">severity: P1</option>
-              <option value="P2">severity: P2</option>
-              <option value="P3">severity: P3</option>
-            </select>
+              onChange={(value) => setAlertSeverityFilter(value as AlertSeverityFilter)}
+              className="w-[170px]"
+              triggerClassName="py-1 text-xs"
+              options={[
+                { value: "all", label: "severity: all" },
+                { value: "P1", label: "severity: P1" },
+                { value: "P2", label: "severity: P2" },
+                { value: "P3", label: "severity: P3" }
+              ]}
+            />
           </div>
         }
       >

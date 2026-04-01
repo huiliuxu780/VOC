@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Panel } from "../components/ui/Panel";
+import { Select } from "../components/ui/Select";
 import { apiGet, apiPost, DataSource } from "../lib/api";
 
 type SchemaResponse = { datasource_id: number; fields: string[] };
@@ -82,15 +83,13 @@ export function MappingStudioPage() {
         title="外部字段结构"
         description="支持 JSON Path 选择与样本定位"
         rightSlot={
-          <select
-            value={selectedId}
-            onChange={(e) => setSelectedId(Number(e.target.value))}
-            className="rounded-lg border border-white/15 bg-black/20 px-2 py-1 text-xs"
-          >
-            {datasources.map((ds) => (
-              <option key={ds.id} value={ds.id}>{ds.name}</option>
-            ))}
-          </select>
+          <Select
+            value={String(selectedId)}
+            onChange={(nextValue) => setSelectedId(Number(nextValue))}
+            className="w-[300px]"
+            triggerClassName="py-1.5 text-xs"
+            options={datasources.map((ds) => ({ value: String(ds.id), label: ds.name }))}
+          />
         }
       >
         {loading ? <p className="text-sm text-textSecondary">字段加载中...</p> : null}

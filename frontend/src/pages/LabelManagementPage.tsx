@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
+import { Select } from "../components/ui/Select";
 import { apiDelete, apiGet, apiPost, apiPut, LabelRecord, LabelUpsertPayload } from "../lib/api";
 
 type LabelFormValues = {
@@ -20,7 +21,7 @@ const defaultFormValues: LabelFormValues = {
   category_id: 1,
   parent_id: null,
   level: 1,
-  name: "新标签",
+  name: "New Label",
   code: "L1_NEW_LABEL",
   is_leaf: false,
   llm_enabled: true,
@@ -76,10 +77,9 @@ export function LabelManagementPage() {
     });
   }, [labels, deferredSearchText, levelFilter]);
 
-  const parentOptions = useMemo(
-    () => labels.filter((item) => item.id !== selectedLabelId),
-    [labels, selectedLabelId]
-  );
+  const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
+  const watchedParentId = watch("parent_id");
+  const parentSelectValue = watchedParentId === null ? "null" : String(watchedParentId);
 
   async function loadLabels() {
     try {
@@ -192,8 +192,8 @@ export function LabelManagementPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
         <Panel
-          title="标签树"
-          description="分级查看和筛选标签结构"
+          title="Label Tree"
+          description="Browse and filter taxonomy levels"
           rightSlot={
             <button
               onClick={createNewLabel}
@@ -252,7 +252,7 @@ export function LabelManagementPage() {
           </div>
         </Panel>
 
-        <Panel title="标签详情" description="编辑层级、编码与 LLM 策略">
+        <Panel title="Label Detail" description="Edit hierarchy, code, and LLM strategy">
           <form onSubmit={handleSubmit((values) => void onSave(values))} className="space-y-4">
             <div className="grid gap-3 md:grid-cols-3">
               <label className="space-y-1 text-xs text-textSecondary">
@@ -275,18 +275,14 @@ export function LabelManagementPage() {
               </label>
               <label className="space-y-1 text-xs text-textSecondary">
                 <span>Parent</span>
-                <select
-                  value={watch("parent_id") === null ? "null" : String(watch("parent_id"))}
-                  onChange={(event) => setValue("parent_id", event.target.value === "null" ? null : Number(event.target.value))}
-                  className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-300/60"
-                >
-                  <option value="null">root</option>
-                  {parentOptions.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} ({item.code})
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={parentSelectValue}
+                  onChange={(nextValue) => setValue("parent_id", nextValue === "null" ? null : Number(nextValue))}
+                  options={[
+                    { value: "null", label: "root" },
+                    ...parentOptions.map((item) => ({ value: String(item.id), label: `${item.name} (${item.code})` }))
+                  ]}
+                />
               </label>
             </div>
 
@@ -349,18 +345,15 @@ export function LabelManagementPage() {
           <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
             <p className="mb-2 text-xs text-textSecondary">Quick Move</p>
             <div className="flex flex-wrap items-center gap-2">
-              <select
+              <Select
                 value={moveTargetParentId}
-                onChange={(event) => setMoveTargetParentId(event.target.value)}
-                className="rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none transition-colors focus:border-indigo-300/60"
-              >
-                <option value="null">root</option>
-                {parentOptions.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} ({item.code})
-                  </option>
-                ))}
-              </select>
+                onChange={setMoveTargetParentId}
+                className="min-w-[280px]"
+                options={[
+                  { value: "null", label: "root" },
+                  ...parentOptions.map((item) => ({ value: String(item.id), label: `${item.name} (${item.code})` }))
+                ]}
+              />
               <button
                 type="button"
                 disabled={moving || selectedLabelId === null}

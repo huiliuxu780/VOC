@@ -28,6 +28,9 @@ Last updated: 2026-04-01 (Prompt + Label flow completed)
 
 ## P2 - Engineering Quality
 
+- [x] Unify frontend dropdown style with shared dark select component.
+  Done on: 2026-04-01.
+  Delivered: replace all native `<select>` usage with shared `Select` component and verify globally.
 - [ ] Fix encoding issues in design doc and keep one clean Chinese version.
 - [ ] Add changelog/release notes hygiene (template + update discipline).
 - [ ] Add API contract snapshot checks to CI (schema drift guard).
