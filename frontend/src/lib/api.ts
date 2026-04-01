@@ -130,9 +130,12 @@ export type MonitoringModelMetric = {
 };
 
 export type MonitoringAlertRecord = {
+  id: number;
   severity: string;
   type: string;
   status: string;
+  detail?: Record<string, unknown>;
+  created_at?: string;
 };
 
 export type MonitoringTrendPoint = {

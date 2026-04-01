@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Panel } from "../components/ui/Panel";
 import {
   apiGet,
+  apiPost,
   MonitoringAlertRecord,
   MonitoringDashboardMetrics,
   MonitoringDatasourceMetric,
@@ -18,6 +19,19 @@ function severityClass(severity: string) {
   return "text-cyan-200 border-cyan-400/40 bg-cyan-500/10";
 }
 
+function fmtTime(value?: string) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString();
+}
+
+function alertMessage(alert: MonitoringAlertRecord) {
+  const message = alert.detail?.message;
+  return typeof message === "string" ? message : "No detail";
+}
+
+type AlertStatusFilter = "all" | "open" | "ack" | "resolved";
+type AlertSeverityFilter = "all" | "P1" | "P2" | "P3";
+
 export function MonitoringPage() {
   const [metrics, setMetrics] = useState<MonitoringDashboardMetrics | null>(null);
   const [datasources, setDatasources] = useState<MonitoringDatasourceMetric[]>([]);
@@ -25,6 +39,9 @@ export function MonitoringPage() {
   const [alerts, setAlerts] = useState<MonitoringAlertRecord[]>([]);
   const [notice, setNotice] = useState("Monitoring data refreshes every 8 seconds.");
   const [loading, setLoading] = useState(true);
+  const [alertStatusFilter, setAlertStatusFilter] = useState<AlertStatusFilter>("all");
+  const [alertSeverityFilter, setAlertSeverityFilter] = useState<AlertSeverityFilter>("all");
+  const [actionBusyAlertId, setActionBusyAlertId] = useState<number | null>(null);
 
   async function loadMonitoring() {
     try {
@@ -32,7 +49,9 @@ export function MonitoringPage() {
         apiGet<MonitoringDashboardMetrics>("/monitoring/dashboard"),
         apiGet<MonitoringDatasourceMetric[]>("/monitoring/datasources"),
         apiGet<MonitoringModelMetric[]>("/monitoring/models"),
-        apiGet<MonitoringAlertRecord[]>("/monitoring/alerts")
+        apiGet<MonitoringAlertRecord[]>(
+          `/monitoring/alerts?status=${encodeURIComponent(alertStatusFilter)}&severity=${encodeURIComponent(alertSeverityFilter)}`
+        )
       ]);
       setMetrics(dashboardResult);
       setDatasources(datasourceResult);
@@ -46,13 +65,26 @@ export function MonitoringPage() {
     }
   }
 
+  async function updateAlertStatus(alertId: number, action: "ack" | "resolve") {
+    setActionBusyAlertId(alertId);
+    try {
+      const result = await apiPost<MonitoringAlertRecord>(`/monitoring/alerts/${alertId}/${action}`);
+      setNotice(`Alert #${result.id} updated to ${result.status}`);
+      await loadMonitoring();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Failed to update alert");
+    } finally {
+      setActionBusyAlertId(null);
+    }
+  }
+
   useEffect(() => {
     void loadMonitoring();
     const timer = setInterval(() => {
       void loadMonitoring();
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [alertStatusFilter, alertSeverityFilter]);
 
   const cards = useMemo(() => {
     if (!metrics) return [];
@@ -134,17 +166,72 @@ export function MonitoringPage() {
         </Panel>
       </div>
 
-      <Panel title="Alert Queue" description="current alert records">
+      <Panel
+        title="Alert Queue"
+        description="filter and operate active alerts"
+        rightSlot={
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <select
+              value={alertStatusFilter}
+              onChange={(e) => setAlertStatusFilter(e.target.value as AlertStatusFilter)}
+              className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
+            >
+              <option value="all">status: all</option>
+              <option value="open">status: open</option>
+              <option value="ack">status: ack</option>
+              <option value="resolved">status: resolved</option>
+            </select>
+            <select
+              value={alertSeverityFilter}
+              onChange={(e) => setAlertSeverityFilter(e.target.value as AlertSeverityFilter)}
+              className="rounded-lg border border-white/15 bg-black/20 px-2 py-1"
+            >
+              <option value="all">severity: all</option>
+              <option value="P1">severity: P1</option>
+              <option value="P2">severity: P2</option>
+              <option value="P3">severity: P3</option>
+            </select>
+          </div>
+        }
+      >
         <div className="space-y-2 text-xs">
-          {alerts.map((alert, index) => (
-            <div key={`${alert.severity}-${alert.type}-${index}`} className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2">
-              <span>{alert.type}</span>
-              <div className="flex items-center gap-2">
-                <span className={["rounded-full border px-2 py-0.5", severityClass(alert.severity)].join(" ")}>{alert.severity}</span>
-                <span className="text-textSecondary">{alert.status}</span>
+          {alerts.length === 0 ? (
+            <p className="text-textSecondary">No alerts for current filters.</p>
+          ) : (
+            alerts.map((alert) => (
+              <div key={alert.id} className="rounded-lg border border-white/10 px-3 py-2">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="font-medium text-indigo-100">{alert.type}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={["rounded-full border px-2 py-0.5", severityClass(alert.severity)].join(" ")}>{alert.severity}</span>
+                    <span className="rounded-full border border-white/15 px-2 py-0.5 text-textSecondary">{alert.status}</span>
+                  </div>
+                </div>
+                <p className="text-textSecondary">{alertMessage(alert)}</p>
+                <p className="mt-1 text-[11px] text-textSecondary">created: {fmtTime(alert.created_at)}</p>
+                <div className="mt-2 flex gap-2">
+                  {(alert.status === "open" || alert.status === "ack") && (
+                    <button
+                      disabled={actionBusyAlertId === alert.id || alert.status === "ack"}
+                      onClick={() => void updateAlertStatus(alert.id, "ack")}
+                      className="cursor-pointer rounded-lg border border-cyan-400/40 px-2 py-1 text-[11px] text-cyan-200 transition-colors hover:border-cyan-300/60 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {actionBusyAlertId === alert.id ? "Updating..." : "Ack"}
+                    </button>
+                  )}
+                  {(alert.status === "open" || alert.status === "ack") && (
+                    <button
+                      disabled={actionBusyAlertId === alert.id}
+                      onClick={() => void updateAlertStatus(alert.id, "resolve")}
+                      className="cursor-pointer rounded-lg border border-emerald-400/40 px-2 py-1 text-[11px] text-emerald-200 transition-colors hover:border-emerald-300/60 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {actionBusyAlertId === alert.id ? "Updating..." : "Resolve"}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </Panel>
     </div>
