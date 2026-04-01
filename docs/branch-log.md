@@ -162,6 +162,30 @@
 
 ---
 
+## feature/staged-pipeline-service
+
+- **用途：** 将 `run_pipeline_mock` 占位逻辑替换为分阶段执行服务，触发与重试都走统一执行流程
+- **任务类型：** 功能开发
+- **关联页面/模块：** 后端作业执行链路（`backend/app/services/pipeline_runner.py`、`backend/app/api/v1/jobs.py`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/app/services/pipeline_runner.py`
+  - `backend/app/api/v1/jobs.py`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** `run_pipeline_mock` 已替换为后台分阶段执行服务（按阶段推进、产出统计与失败明细）；`trigger`、`retry_run`、`retry_single_failure` 全部接入新执行服务，并对活跃执行中的 run 跳过旧自动推进逻辑，避免状态互相覆盖。
+- **验证情况：**
+  - lint：不适用（后端 Python）
+  - tests：未执行（当前仓库无对应自动化测试）
+  - type-check：不适用
+  - build：`python -m compileall app` 通过
+  - 手工验证：函数级冒烟通过（trigger 后 run 可自动完成；single failure retry 可自动完成）
+- **风险说明：** 执行服务改为后台线程后，需要注意与既有运行态自动推进逻辑的并发一致性。
+- **下一步：** 发起 PR，并在下一轮补充 pipeline 执行服务的后端自动化测试。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面

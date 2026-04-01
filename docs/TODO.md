@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Pipeline designer flow completed)
+Last updated: 2026-04-01 (Staged pipeline execution service completed)
 
 ## P0 - Core Delivery
 
@@ -23,8 +23,9 @@ Last updated: 2026-04-01 (Pipeline designer flow completed)
 - [x] Implement missing APIs defined in design doc.
   Done on: 2026-04-01.
   Delivered: `/monitoring/queues` + `/monitoring/apis` + `/settings/models` (`GET/PUT`) implemented and routed.
-- [ ] Replace pipeline mock with staged execution service.
-  Current state: `run_pipeline_mock` placeholder.
+- [x] Replace pipeline mock with staged execution service.
+  Done on: 2026-04-01.
+  Delivered: `run_pipeline_mock` replaced by background staged executor; trigger + run retry + single-failure retry now all schedule staged execution.
 - [ ] Add backend unit/integration tests for critical APIs.
 - [ ] Add frontend component/page tests for key workflows.
 

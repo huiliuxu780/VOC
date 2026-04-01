@@ -16,7 +16,7 @@ from app.schemas.job import (
     PipelineNodeConfig,
     TriggerResponse,
 )
-from app.services.pipeline_runner import run_pipeline_mock
+from app.services.pipeline_runner import is_pipeline_run_active, run_pipeline_mock
 
 router = APIRouter()
 
@@ -309,6 +309,8 @@ def _advance_running_runs(db: Session) -> None:
     changed = False
 
     for run in running_runs:
+        if is_pipeline_run_active(run.run_id):
+            continue
         stages = db.scalars(select(JobRunStage).where(JobRunStage.run_id == run.run_id).order_by(JobRunStage.id)).all()
         if not stages:
             continue
@@ -651,6 +653,7 @@ def retry_run(run_id: str, db: Session = Depends(get_db)) -> dict:
     for stage_name in stage_names or DEFAULT_STAGES:
         db.add(JobRunStage(run_id=new_run_id, stage_name=stage_name, status="pending", duration_ms=0))
     db.commit()
+    run_pipeline_mock(new_run_id)
     return {"old_run_id": run_id, "new_run_id": new_run_id, "status": "queued"}
 
 
@@ -690,4 +693,5 @@ def retry_single_failure(run_id: str, record_id: str, db: Session = Depends(get_
     failure.retry_status = "queued"
     failure.retry_run_id = new_run_id
     db.commit()
+    run_pipeline_mock(new_run_id)
     return {"run_id": run_id, "record_id": record_id, "retry_run_id": new_run_id, "status": "queued"}
