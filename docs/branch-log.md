@@ -97,7 +97,7 @@
   - `README.md`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增 `backend/scripts/check_openapi_snapshot.py`，支持本地/CI 生成并比对 OpenAPI 快照（含 `--update` 更新模式）；新增基线文件 `backend/contracts/openapi.snapshot.json` 与 CI 工作流 `.github/workflows/api-contract-check.yml`，在 PR 与主干提交时自动校验 schema 漂移并上传当前快照产物；在 `.gitignore` 忽略 `openapi.current.json` 临时输出，并在 `README.md` 增补本地执行命令。
 - **验证情况：**
   - lint：不适用
@@ -106,7 +106,7 @@
   - build：不适用
   - 手工验证：`python backend/scripts/check_openapi_snapshot.py --baseline backend/contracts/openapi.snapshot.json` 本地通过；`--update` 已验证可更新基线
 - **风险说明：** 若变更者直接更新 baseline 而不审阅 diff，仍可能弱化漂移保护，需要在 PR 审查中强制检查快照差异。
-- **下一步：** 合并到 `main` 并在后续 API 变更 PR 中执行一次真实漂移校验演练。
+- **下一步：** 在后续 API 变更 PR 中执行真实漂移校验演练，并要求审查快照 diff 后再更新 baseline。
 
 ---
 
