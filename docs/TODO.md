@@ -27,6 +27,7 @@ Last updated: 2026-04-01 (Staged pipeline execution service completed)
   Done on: 2026-04-01.
   Delivered: `run_pipeline_mock` replaced by background staged executor; trigger + run retry + single-failure retry now all schedule staged execution.
 - [ ] Add backend unit/integration tests for critical APIs.
+  Progress: added `backend/tests/test_pipeline_execution_service.py` covering trigger/retry/single-failure-retry staged execution paths.
 - [ ] Add frontend component/page tests for key workflows.
 
 ## P2 - Engineering Quality

@@ -186,6 +186,29 @@
 
 ---
 
+## feature/pipeline-execution-tests
+
+- **用途：** 为分阶段 pipeline 执行服务补充后端自动化测试，覆盖 trigger/retry 与失败重试关键路径
+- **任务类型：** 功能开发
+- **关联页面/模块：** 后端测试（`backend/tests`）、作业执行链路（`jobs.py` / `pipeline_runner.py`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/tests/test_pipeline_execution_service.py`
+  - `docs/branch-log.md`
+  - `docs/TODO.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增后端自动化测试文件，覆盖 staged pipeline 的关键链路：`trigger_job` 自动完成、`retry_run` 自动完成、`retry_single_failure` 关联字段更新与自动完成。
+- **验证情况：**
+  - lint：不适用（后端 Python）
+  - tests：`python -m pytest tests/test_pipeline_execution_service.py -q` 通过（3 passed）
+  - type-check：不适用
+  - build：`python -m compileall app` 已通过（沿用上一轮结果）
+  - 手工验证：不适用（本轮以自动化测试为主）
+- **风险说明：** 若测试直接使用本地 sqlite 文件，存在历史数据影响断言的风险，需要使用唯一 run_id/record_id 降低耦合。
+- **下一步：** 发起 PR；后续可补充 fixture 隔离测试数据库，进一步降低与历史数据耦合。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面
