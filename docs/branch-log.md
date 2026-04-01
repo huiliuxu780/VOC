@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-highlight-dom-regression
+
+- **用途：** 为标签搜索高亮补充 DOM 回归测试，防止高亮渲染在后续迭代中退化
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.dom.test.ts`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `frontend/src/test/domTestUtils.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 为标签管理页新增“搜索命中高亮”DOM 回归用例；并在测试工具中新增 `changeInputValue`，采用原型 setter + `input/change` 事件触发，提升 React 受控输入测试稳定性。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 3 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 若选择器过于依赖文案或样式类，测试可能脆弱，后续重构时易误报失败。
+- **下一步：** 发起 PR 评审并合并；后续可在同一工具中补充 `blur/focus` 触发工具以覆盖更多表单交互场景。
+
+---
+
 ## feature/label-search-highlight
 
 - **用途：** 优化标签管理页搜索体验，在列表中高亮命中关键字

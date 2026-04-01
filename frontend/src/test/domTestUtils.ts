@@ -79,3 +79,26 @@ export async function clickElement(element: HTMLElement): Promise<void> {
     element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   });
 }
+
+export async function changeInputValue(
+  element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
+  value: string
+): Promise<void> {
+  const elementPrototype =
+    element instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : element instanceof HTMLSelectElement
+        ? HTMLSelectElement.prototype
+        : HTMLInputElement.prototype;
+  const valueSetter = Object.getOwnPropertyDescriptor(elementPrototype, "value")?.set;
+
+  await act(async () => {
+    if (valueSetter) {
+      valueSetter.call(element, value);
+    } else {
+      element.value = value;
+    }
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+}
