@@ -10,6 +10,15 @@ from app.models.runtime import JobRun
 from app.schemas.monitoring import DashboardMetrics, TrendPoint
 
 router = APIRouter()
+ALERT_TRANSITIONS = {
+    "ack": {"next": "ack", "allowed_from": {"open"}},
+    "resolve": {"next": "resolved", "allowed_from": {"open", "ack"}},
+    "reopen": {"next": "open", "allowed_from": {"resolved"}},
+}
+
+
+def _iso_now() -> str:
+    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
 
 def _build_hourly_trend() -> list[TrendPoint]:
@@ -24,6 +33,29 @@ def _build_hourly_trend() -> list[TrendPoint]:
     return points
 
 
+def _seed_history(status: str) -> list[dict]:
+    history = [
+        {
+            "action": "created",
+            "from_status": None,
+            "to_status": "open",
+            "actor": "system",
+            "at": _iso_now(),
+        }
+    ]
+    if status == "ack":
+        history.append(
+            {
+                "action": "ack",
+                "from_status": "open",
+                "to_status": "ack",
+                "actor": "system",
+                "at": _iso_now(),
+            }
+        )
+    return history
+
+
 def _seed_alerts_if_empty(db: Session) -> None:
     count = int(db.scalar(select(func.count()).select_from(AlertRecord)) or 0)
     if count > 0:
@@ -34,19 +66,31 @@ def _seed_alerts_if_empty(db: Session) -> None:
             "alert_type": "queue_backlog",
             "severity": "P1",
             "status": "open",
-            "detail": {"message": "Queue backlog exceeds threshold", "queue": "voc_raw_comment"},
+            "detail": {
+                "message": "Queue backlog exceeds threshold",
+                "queue": "voc_raw_comment",
+                "history": _seed_history("open"),
+            },
         },
         {
             "alert_type": "model_error_rate",
             "severity": "P2",
             "status": "ack",
-            "detail": {"message": "Model error rate trend up", "model": "gpt-4.1-mini"},
+            "detail": {
+                "message": "Model error rate trend up",
+                "model": "gpt-4.1-mini",
+                "history": _seed_history("ack"),
+            },
         },
         {
             "alert_type": "datasource_timeout",
             "severity": "P3",
             "status": "open",
-            "detail": {"message": "Datasource timeout spikes", "datasource": "HTTP-评论"},
+            "detail": {
+                "message": "Datasource timeout spikes",
+                "datasource": "HTTP-comments",
+                "history": _seed_history("open"),
+            },
         },
     ]
     for item in seed_items:
@@ -58,15 +102,40 @@ def _refresh_monitoring(db: Session) -> None:
     _seed_alerts_if_empty(db)
 
 
+def _normalize_detail(detail: dict | None) -> dict:
+    payload = dict(detail or {})
+    if not isinstance(payload.get("history"), list):
+        payload["history"] = []
+    return payload
+
+
 def _alert_to_dict(alert: AlertRecord) -> dict:
     return {
         "id": alert.id,
         "type": alert.alert_type,
         "severity": alert.severity,
         "status": alert.status,
-        "detail": alert.detail or {},
+        "detail": _normalize_detail(alert.detail),
         "created_at": alert.created_at,
     }
+
+
+def _append_alert_history(detail: dict | None, action: str, from_status: str, to_status: str, actor: str) -> dict:
+    payload = _normalize_detail(detail)
+    history = list(payload["history"])
+    history.append(
+        {
+            "action": action,
+            "from_status": from_status,
+            "to_status": to_status,
+            "actor": actor,
+            "at": _iso_now(),
+        }
+    )
+    payload["history"] = history
+    payload["last_action"] = action
+    payload["last_action_at"] = history[-1]["at"]
+    return payload
 
 
 @router.get("/dashboard", response_model=DashboardMetrics)
@@ -110,8 +179,8 @@ def trend_metrics() -> list[TrendPoint]:
 @router.get("/datasources")
 def datasource_metrics() -> list[dict]:
     return [
-        {"datasource": "HTTP-评论", "success_rate": 0.984, "latency_ms": 330},
-        {"datasource": "Kafka-热线", "success_rate": 0.973, "latency_ms": 210},
+        {"datasource": "HTTP-comments", "success_rate": 0.984, "latency_ms": 330},
+        {"datasource": "Kafka-hotline", "success_rate": 0.973, "latency_ms": 210},
     ]
 
 
@@ -139,22 +208,65 @@ def alert_records(
     return [_alert_to_dict(row) for row in rows]
 
 
-def _update_alert_status(alert_id: int, next_status: str, db: Session) -> dict:
+@router.get("/alerts/{alert_id}")
+def alert_record_detail(alert_id: int, db: Session = Depends(get_db)) -> dict:
     _refresh_monitoring(db)
     alert = db.scalar(select(AlertRecord).where(AlertRecord.id == alert_id))
     if alert is None:
         raise HTTPException(status_code=404, detail="alert not found")
+    return _alert_to_dict(alert)
+
+
+def _update_alert_status(alert_id: int, action: str, db: Session, actor: str = "operator") -> dict:
+    _refresh_monitoring(db)
+    alert = db.scalar(select(AlertRecord).where(AlertRecord.id == alert_id))
+    if alert is None:
+        raise HTTPException(status_code=404, detail="alert not found")
+
+    transition = ALERT_TRANSITIONS[action]
+    next_status = str(transition["next"])
+    allowed_from = set(transition["allowed_from"])
+    if alert.status == next_status:
+        return _alert_to_dict(alert)
+    if alert.status not in allowed_from:
+        raise HTTPException(status_code=409, detail=f"cannot {action} alert from status={alert.status}")
+
+    previous_status = alert.status
     alert.status = next_status
+    alert.detail = _append_alert_history(
+        detail=alert.detail,
+        action=action,
+        from_status=previous_status,
+        to_status=next_status,
+        actor=actor,
+    )
     db.commit()
     db.refresh(alert)
     return _alert_to_dict(alert)
 
 
 @router.post("/alerts/{alert_id}/ack")
-def ack_alert(alert_id: int, db: Session = Depends(get_db)) -> dict:
-    return _update_alert_status(alert_id=alert_id, next_status="ack", db=db)
+def ack_alert(
+    alert_id: int,
+    actor: str = Query(default="operator"),
+    db: Session = Depends(get_db),
+) -> dict:
+    return _update_alert_status(alert_id=alert_id, action="ack", db=db, actor=actor)
 
 
 @router.post("/alerts/{alert_id}/resolve")
-def resolve_alert(alert_id: int, db: Session = Depends(get_db)) -> dict:
-    return _update_alert_status(alert_id=alert_id, next_status="resolved", db=db)
+def resolve_alert(
+    alert_id: int,
+    actor: str = Query(default="operator"),
+    db: Session = Depends(get_db),
+) -> dict:
+    return _update_alert_status(alert_id=alert_id, action="resolve", db=db, actor=actor)
+
+
+@router.post("/alerts/{alert_id}/reopen")
+def reopen_alert(
+    alert_id: int,
+    actor: str = Query(default="operator"),
+    db: Session = Depends(get_db),
+) -> dict:
+    return _update_alert_status(alert_id=alert_id, action="reopen", db=db, actor=actor)

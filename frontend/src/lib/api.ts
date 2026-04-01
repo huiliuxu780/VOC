@@ -129,12 +129,26 @@ export type MonitoringModelMetric = {
   error_rate: number;
 };
 
+export type MonitoringAlertHistoryItem = {
+  action: string;
+  from_status?: string | null;
+  to_status?: string;
+  actor?: string;
+  at?: string;
+};
+
+export type MonitoringAlertDetail = {
+  message?: string;
+  history?: MonitoringAlertHistoryItem[];
+  [key: string]: unknown;
+};
+
 export type MonitoringAlertRecord = {
   id: number;
   severity: string;
   type: string;
   status: string;
-  detail?: Record<string, unknown>;
+  detail?: MonitoringAlertDetail;
   created_at?: string;
 };
 
