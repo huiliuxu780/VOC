@@ -120,6 +120,21 @@ function buildTopLevelDiffRows(inputPayload: unknown, outputPayload: unknown) {
   });
 }
 
+function formatJsonPayload(payload: unknown, maxChars = 6000): string {
+  const json = JSON.stringify(payload ?? {}, null, 2);
+  if (json.length <= maxChars) return json;
+  const hidden = json.length - maxChars;
+  return `${json.slice(0, maxChars)}\n... [truncated ${hidden} chars]`;
+}
+
+function buildInitialExpandedStages(detail: RunFailureDetailResponse): Record<string, boolean> {
+  const map: Record<string, boolean> = {};
+  for (const stage of detail.stage_timeline) {
+    map[stage.stage_name] = stage.stage_name === detail.node;
+  }
+  return map;
+}
+
 const runFilters = [
   { key: "all", label: "All" },
   { key: "running", label: "Running" },
@@ -157,6 +172,7 @@ export function JobManagementPage() {
   const [retryingRunId, setRetryingRunId] = useState<string | null>(null);
   const [retryingRecordId, setRetryingRecordId] = useState<string | null>(null);
   const [showChangedOnly, setShowChangedOnly] = useState(false);
+  const [expandedTimelineStages, setExpandedTimelineStages] = useState<Record<string, boolean>>({});
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   function pushNotice(message: string, tone: NoticeTone = "neutral") {
@@ -169,6 +185,7 @@ export function JobManagementPage() {
     setFailureDrawerLoading(false);
     setDrawerRecordId("");
     setShowChangedOnly(false);
+    setExpandedTimelineStages({});
   }
 
   async function loadJobs() {
@@ -226,10 +243,13 @@ export function JobManagementPage() {
     try {
       const detail = await apiGet<RunFailureDetailResponse>(`/jobs/runs/${selectedRunId}/failures/${recordId}`);
       setSelectedFailure(detail);
+      setExpandedTimelineStages(buildInitialExpandedStages(detail));
     } catch (err) {
       const fallback = failures.find((item) => item.record_id === recordId);
       if (fallback) {
-        setSelectedFailure(buildFallbackDetail(fallback, stages));
+        const fallbackDetail = buildFallbackDetail(fallback, stages);
+        setSelectedFailure(fallbackDetail);
+        setExpandedTimelineStages(buildInitialExpandedStages(fallbackDetail));
         pushNotice("Detail endpoint unavailable. Showing fallback snapshot.", "neutral");
       } else {
         pushNotice(err instanceof Error ? err.message : "Failed to load failure detail", "error");
@@ -666,7 +686,7 @@ export function JobManagementPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="failure-drawer-title"
-            className="absolute right-0 top-0 h-full w-full max-w-lg border-l border-white/10 bg-[#07090D] p-4"
+            className="absolute inset-x-0 bottom-0 h-[88vh] w-full overflow-y-auto rounded-t-2xl border border-white/10 bg-[#07090D] p-4 md:inset-y-0 md:right-0 md:left-auto md:h-full md:max-w-lg md:rounded-none md:border-l md:border-t-0"
           >
             <div className="mb-3 flex items-center justify-between">
               <h3 id="failure-drawer-title" className="text-sm font-semibold">
@@ -695,95 +715,109 @@ export function JobManagementPage() {
             </div>
             {selectedFailure ? (
               <div className="space-y-3 text-xs">
-              <div className="rounded-lg border border-white/10 p-2">
-                <p className="text-indigo-200">{selectedFailure.record_id}</p>
-                <p className="text-textSecondary">{selectedFailure.category} | {selectedFailure.error_type}</p>
-                <p className="mt-1">{selectedFailure.detail}</p>
-                <p className="mt-1 text-textSecondary">
-                  Retry status: {retryStatusLabel(selectedFailure.retry_status)}
-                  {selectedFailure.retry_run_id ? ` (${selectedFailure.retry_run_id})` : ""}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/10 p-2">
-                <p className="mb-1 text-textSecondary">Node Timeline</p>
-                <div className="space-y-2">
-                  {selectedFailure.stage_timeline.map((stage) => {
-                    const diffRows = buildTopLevelDiffRows(stage.input_payload, stage.output_payload);
-                    const changedCount = diffRows.filter((row) => row.changed).length;
-                    const visibleRows = showChangedOnly ? diffRows.filter((row) => row.changed) : diffRows;
-                    return (
-                      <details
-                        key={stage.stage_name}
-                        open={stage.stage_name === selectedFailure.node}
-                        className="rounded border border-white/10 bg-white/[0.02] p-2"
-                      >
-                        <summary className="flex cursor-pointer items-center justify-between gap-2 text-[11px]">
-                          <span className="font-medium text-indigo-100">{stage.stage_name}</span>
-                          <span className={statusClass(stage.status)}>{stage.status}</span>
-                          <span className="text-textSecondary">{stage.duration_ms}ms</span>
-                          <span
-                            className={[
-                              "rounded-full border px-2 py-0.5",
-                              changedCount > 0
-                                ? "border-amber-400/40 bg-amber-500/10 text-amber-200"
-                                : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
-                            ].join(" ")}
-                          >
-                            {changedCount > 0 ? `${changedCount} changed` : "no change"}
-                          </span>
-                        </summary>
-
-                        <div className="mt-2 grid gap-2 md:grid-cols-2">
-                          <div className="rounded border border-white/10 p-2">
-                            <p className="mb-1 text-[11px] text-textSecondary">Input</p>
-                            <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(stage.input_payload ?? {}, null, 2)}</pre>
-                          </div>
-                          <div className="rounded border border-white/10 p-2">
-                            <p className="mb-1 text-[11px] text-textSecondary">Output</p>
-                            <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(stage.output_payload ?? {}, null, 2)}</pre>
-                          </div>
-                        </div>
-
-                        <div className="mt-2 rounded border border-white/10 p-2">
-                          <p className="mb-1 text-[11px] text-textSecondary">Top-level diff</p>
-                          {visibleRows.length === 0 ? (
-                            <p className="text-[11px] text-textSecondary">No changed fields.</p>
-                          ) : (
-                            <div className="space-y-1">
-                              <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 px-2 text-[11px] text-textSecondary">
-                                <span>field</span>
-                                <span>input</span>
-                                <span>output</span>
-                              </div>
-                              {visibleRows.map((row) => (
-                                <div
-                                  key={`${stage.stage_name}-${row.key}`}
-                                  className={[
-                                    "grid grid-cols-[1fr_1fr_1fr] gap-2 rounded px-2 py-1 text-[11px]",
-                                    row.changed ? "bg-amber-500/10 text-amber-100" : "bg-white/[0.02] text-textSecondary"
-                                  ].join(" ")}
-                                >
-                                  <span className="truncate font-medium">{row.key}</span>
-                                  <span className="truncate">{row.inputText || "(empty)"}</span>
-                                  <span className="truncate">{row.outputText || "(empty)"}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </details>
-                    );
-                  })}
+                <div className="rounded-lg border border-white/10 p-2">
+                  <p className="text-indigo-200">{selectedFailure.record_id}</p>
+                  <p className="text-textSecondary">{selectedFailure.category} | {selectedFailure.error_type}</p>
+                  <p className="mt-1">{selectedFailure.detail}</p>
+                  <p className="mt-1 text-textSecondary">
+                    Retry status: {retryStatusLabel(selectedFailure.retry_status)}
+                    {selectedFailure.retry_run_id ? ` (${selectedFailure.retry_run_id})` : ""}
+                  </p>
                 </div>
-              </div>
-              <div className="rounded-lg border border-white/10 p-2">
-                <p className="mb-1 text-textSecondary">Input Payload</p>
-                <pre className="overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(selectedFailure.input_payload ?? {}, null, 2)}</pre>
-              </div>
-              <div className="rounded-lg border border-white/10 p-2">
-                <p className="mb-1 text-textSecondary">Output Payload</p>
-                <pre className="overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(selectedFailure.output_payload ?? {}, null, 2)}</pre>
-              </div>
+
+                <div className="rounded-lg border border-white/10 p-2">
+                  <p className="mb-1 text-textSecondary">Node Timeline</p>
+                  <div className="space-y-2">
+                    {selectedFailure.stage_timeline.map((stage) => {
+                      const diffRows = buildTopLevelDiffRows(stage.input_payload, stage.output_payload);
+                      const changedCount = diffRows.filter((row) => row.changed).length;
+                      const visibleRows = showChangedOnly ? diffRows.filter((row) => row.changed) : diffRows;
+                      const isExpanded =
+                        expandedTimelineStages[stage.stage_name] ?? stage.stage_name === selectedFailure.node;
+                      return (
+                        <details
+                          key={stage.stage_name}
+                          open={isExpanded}
+                          onToggle={(event) => {
+                            const open = event.currentTarget.open;
+                            setExpandedTimelineStages((prev) => ({ ...prev, [stage.stage_name]: open }));
+                          }}
+                          className="rounded border border-white/10 bg-white/[0.02] p-2"
+                        >
+                          <summary className="flex cursor-pointer items-center justify-between gap-2 text-[11px]">
+                            <span className="font-medium text-indigo-100">{stage.stage_name}</span>
+                            <span className={statusClass(stage.status)}>{stage.status}</span>
+                            <span className="text-textSecondary">{stage.duration_ms}ms</span>
+                            <span
+                              className={[
+                                "rounded-full border px-2 py-0.5",
+                                changedCount > 0
+                                  ? "border-amber-400/40 bg-amber-500/10 text-amber-200"
+                                  : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
+                              ].join(" ")}
+                            >
+                              {changedCount > 0 ? `${changedCount} changed` : "no change"}
+                            </span>
+                          </summary>
+
+                          {isExpanded ? (
+                            <>
+                              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                                <div className="rounded border border-white/10 p-2">
+                                  <p className="mb-1 text-[11px] text-textSecondary">Input</p>
+                                  <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{formatJsonPayload(stage.input_payload)}</pre>
+                                </div>
+                                <div className="rounded border border-white/10 p-2">
+                                  <p className="mb-1 text-[11px] text-textSecondary">Output</p>
+                                  <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{formatJsonPayload(stage.output_payload)}</pre>
+                                </div>
+                              </div>
+
+                              <div className="mt-2 rounded border border-white/10 p-2">
+                                <p className="mb-1 text-[11px] text-textSecondary">Top-level diff</p>
+                                {visibleRows.length === 0 ? (
+                                  <p className="text-[11px] text-textSecondary">No changed fields.</p>
+                                ) : (
+                                  <div className="space-y-1">
+                                    <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 px-2 text-[11px] text-textSecondary">
+                                      <span>field</span>
+                                      <span>input</span>
+                                      <span>output</span>
+                                    </div>
+                                    {visibleRows.map((row) => (
+                                      <div
+                                        key={`${stage.stage_name}-${row.key}`}
+                                        className={[
+                                          "grid grid-cols-[1fr_1fr_1fr] gap-2 rounded px-2 py-1 text-[11px]",
+                                          row.changed ? "bg-amber-500/10 text-amber-100" : "bg-white/[0.02] text-textSecondary"
+                                        ].join(" ")}
+                                      >
+                                        <span className="truncate font-medium">{row.key}</span>
+                                        <span className="truncate">{row.inputText || "(empty)"}</span>
+                                        <span className="truncate">{row.outputText || "(empty)"}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          ) : (
+                            <p className="mt-2 text-[11px] text-textSecondary">Expand to load payload and diff.</p>
+                          )}
+                        </details>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-white/10 p-2">
+                  <p className="mb-1 text-textSecondary">Input Payload</p>
+                  <pre className="max-h-56 overflow-auto whitespace-pre-wrap text-[11px]">{formatJsonPayload(selectedFailure.input_payload)}</pre>
+                </div>
+                <div className="rounded-lg border border-white/10 p-2">
+                  <p className="mb-1 text-textSecondary">Output Payload</p>
+                  <pre className="max-h-56 overflow-auto whitespace-pre-wrap text-[11px]">{formatJsonPayload(selectedFailure.output_payload)}</pre>
+                </div>
               </div>
             ) : (
               <p className="text-xs text-textSecondary">Preparing detail view for {drawerRecordId}...</p>

@@ -1,12 +1,33 @@
 # VOC AI Labeling Platform (MVP)
 
-前后端分离项目：
-- 前端：`frontend/`（React + Vite + Tailwind）
-- 后端：`backend/`（FastAPI + SQLAlchemy）
+This repository contains a front-end and back-end MVP for VOC labeling operations.
 
-## 快速启动
+- Frontend: `frontend/` (React + Vite + Tailwind)
+- Backend: `backend/` (FastAPI + SQLAlchemy)
 
-### 1) 启动前端
+## MVP Trial (One Command)
+
+Start both services:
+
+```powershell
+.\run-mvp.ps1
+```
+
+Stop both services:
+
+```powershell
+.\stop-mvp.ps1
+```
+
+Default URLs:
+
+- Frontend: `http://127.0.0.1:5173`
+- Backend: `http://127.0.0.1:8000`
+- Health: `http://127.0.0.1:8000/health`
+
+## Manual Start
+
+### Frontend
 
 ```powershell
 cd frontend
@@ -14,24 +35,22 @@ npm install
 npm run dev
 ```
 
-默认地址：`http://localhost:5173`
-
-前端安装卡住时可用替换方案：
+If dependency install is slow:
 
 ```powershell
 cd frontend
 powershell -ExecutionPolicy Bypass -File .\setup-deps.ps1 -NoAudit
 ```
 
-### 2) 启动后端
+### Backend
 
-推荐在项目根目录执行（自动查找 Python 路径）：
+Recommended (auto Python path resolution):
 
 ```powershell
 .\start-api.ps1 -Port 8000
 ```
 
-也可以手动执行：
+Alternative:
 
 ```powershell
 cd backend
@@ -39,15 +58,7 @@ pip install -e .
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-健康检查：`http://localhost:8000/health`
-
-如果 Python 不在 PATH，可用完整路径：
-
-```powershell
-C:\Users\<YourUser>\AppData\Local\Programs\Python\Python312\python.exe -m uvicorn app.main:app --reload --port 8000
-```
-
-## 常用接口前缀
+## API Prefixes
 
 - `/api/v1/datasources`
 - `/api/v1/labels`
@@ -55,8 +66,9 @@ C:\Users\<YourUser>\AppData\Local\Programs\Python\Python312\python.exe -m uvicor
 - `/api/v1/jobs`
 - `/api/v1/monitoring`
 
-## 当前状态
+## Current MVP Capabilities
 
-- 前端：Dashboard、数据源、Mapping、Prompt、作业管理、监控页面可用。
-- 后端：配置与作业链路接口可用，支持运行记录、失败明细、单条失败重试。
-- 运行时：内置 mock seed，可直接联调。
+- Job trigger and run monitoring
+- Failure list with filters/sort/pagination/export
+- Single-item retry and run retry
+- Failure detail drawer with node timeline and IO diff highlights
