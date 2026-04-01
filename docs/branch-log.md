@@ -111,6 +111,29 @@
 
 ---
 
+## docs/shadcn-ui-rules
+
+- **用途：** 补充仓库级前端组件体系规则，并新增 shadcn/ui 技能文档，统一基础组件复用策略
+- **任务类型：** 文档
+- **关联页面/模块：** 仓库开发规范 / `docs/skills`
+- **基于分支：** main
+- **主要改动文件：**
+  - `AGENTS.md`
+  - `docs/skills/shadcn-ui.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在 `AGENTS.md` 增补“前端组件体系规则”完整章节；新增 `docs/skills/shadcn-ui.md`，固化 shadcn/ui 组件复用优先级、Textarea 规则、字段结构与可访问性要求。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：已检查 `AGENTS.md` 目标章节存在，`docs/skills/shadcn-ui.md` 内容完整且路径正确
+- **风险说明：** 规则文档如果与现有代码实践不一致，短期可能需要逐步过渡。
+- **下一步：** 提交分支并发起 PR；后续前端任务按该规则执行并逐步清理历史不一致实现。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面
