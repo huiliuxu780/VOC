@@ -58,7 +58,7 @@
   - `frontend/src/pages/PipelineDesignerPage.tsx`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 采用轻量测试策略接入 Vitest（node 环境），避免重依赖导致的安装/执行卡顿；新增 API client、pipeline store 以及 Prompt/Label/Pipeline 页面 helper 的关键流程测试，并将页面中的可测试逻辑抽离到 helper 模块复用。
 - **验证情况：**
   - lint：不适用（frontend 当前未定义 lint 流程作为本任务门禁）
@@ -67,7 +67,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：核对关键工作流覆盖点（筛选、映射、payload 组装、store 状态变更）已入测试
 - **风险说明：** 首版采用轻量单测为主，尚未覆盖真实 DOM 交互与路由级集成，后续可按迭代引入更完整的页面交互测试。
-- **下一步：** 发起 PR 评审并合并；下一轮补充高价值页面的 DOM 交互测试与回归清单。
+- **下一步：** 下一轮补充高价值页面的 DOM 交互测试与回归清单（优先 Job/Prompt 页）。
 
 ---
 
