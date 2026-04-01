@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-02 (Design doc encoding baseline fixed)
+Last updated: 2026-04-02 (Release/changelog hygiene established)
 
 ## P0 - Core Delivery
 
@@ -41,7 +41,9 @@ Last updated: 2026-04-02 (Design doc encoding baseline fixed)
 - [x] Fix encoding issues in design doc and keep one clean Chinese version.
   Done on: 2026-04-02.
   Delivered: verified `docs/voc-ai-labeling-platform-design.md` as UTF-8 clean Chinese baseline, added explicit encoding/canonical-version note to prevent future drift.
-- [ ] Add changelog/release notes hygiene (template + update discipline).
+- [x] Add changelog/release notes hygiene (template + update discipline).
+  Done on: 2026-04-02.
+  Delivered: added `CHANGELOG.md`, `docs/release-notes-template.md`, and updated `docs/release-runbook.md` + `README.md` to enforce changelog-first release discipline.
 - [ ] Add API contract snapshot checks to CI (schema drift guard).
 
 ## Ongoing Rules

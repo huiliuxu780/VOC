@@ -58,6 +58,31 @@
 
 ---
 
+## docs/changelog-release-hygiene
+
+- **用途：** 建立 changelog/release notes 模板与更新纪律，减少发版信息遗漏
+- **任务类型：** 文档
+- **关联页面/模块：** `CHANGELOG.md`、`docs/release-runbook.md`、`docs/*release*.md`
+- **基于分支：** main
+- **主要改动文件：**
+  - `CHANGELOG.md`
+  - `docs/release-notes-template.md`
+  - `docs/release-runbook.md`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 `CHANGELOG.md` 作为变更事实源，新增 `docs/release-notes-template.md` 作为发版说明模板；更新 `docs/release-runbook.md` 为“先更新 changelog，再执行发布校验与打 tag”的流程；在 `README.md` 增补 changelog 与 release notes 模板入口，并在 `docs/TODO.md` 回写该任务完成状态。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：已核对模板字段完整性，`README.md`/`release-runbook.md` 引用路径可达，发布流程顺序与模板一致
+- **风险说明：** 若后续迭代未持续维护 `[Unreleased]`，仍会出现发版信息补录成本。
+- **下一步：** 合并到 `main` 并在下一次发布前按新流程进行一次实战验证。
+
+---
+
 ## docs/shadcn-skills-sync
 
 - **用途：** 将 shadcn/ui 官方仓库中的 `skills/shadcn` 内容同步到本项目，供本仓库协作与开发参考
