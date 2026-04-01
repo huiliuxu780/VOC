@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Panel } from "../components/ui/Panel";
 import {
   apiGet,
@@ -10,6 +10,7 @@ import {
   PagedRunFailures,
   RetryResult,
   RetrySingleFailureResult,
+  RunFailure,
   RunFailureDetailResponse,
   RunFailureSummary
 } from "../lib/api";
@@ -17,6 +18,7 @@ import {
 type TriggerResponse = { run_id: string; status: string };
 type FailureSortField = "record_id" | "category" | "node" | "error_type";
 type FailureSortOrder = "asc" | "desc";
+type NoticeTone = "neutral" | "success" | "error";
 
 function fmtTime(value?: string | null) {
   if (!value) return "-";
@@ -31,10 +33,29 @@ function statusClass(status: string) {
   return "text-textSecondary";
 }
 
+function retryStatusLabel(status?: string | null) {
+  if (!status) return "not_retried";
+  return status;
+}
+
+function retryStatusClass(status?: string | null) {
+  if (status === "success") return "border-emerald-400/40 bg-emerald-500/10 text-emerald-200";
+  if (status === "running") return "border-cyan-400/40 bg-cyan-500/10 text-cyan-200";
+  if (status === "queued") return "border-amber-400/40 bg-amber-500/10 text-amber-200";
+  if (status === "failed") return "border-rose-400/40 bg-rose-500/10 text-rose-200";
+  return "border-white/15 bg-white/[0.03] text-textSecondary";
+}
+
+function noticeToneClass(tone: NoticeTone) {
+  if (tone === "success") return "border-emerald-400/35 bg-emerald-500/10 text-emerald-100";
+  if (tone === "error") return "border-rose-400/35 bg-rose-500/10 text-rose-100";
+  return "border-white/10 bg-white/[0.02] text-textSecondary";
+}
+
 function downloadFailuresCsv(runId: string, rows: PagedRunFailures["items"]) {
-  const header = ["record_id", "category", "node", "error_type", "detail"];
+  const header = ["record_id", "category", "node", "error_type", "detail", "retry_status", "retry_run_id"];
   const lines = rows.map((row) =>
-    [row.record_id, row.category, row.node, row.error_type, row.detail]
+    [row.record_id, row.category, row.node, row.error_type, row.detail, row.retry_status ?? "", row.retry_run_id ?? ""]
       .map((cell) => `"${String(cell).replace(/"/g, "\"\"")}"`)
       .join(",")
   );
@@ -48,6 +69,19 @@ function downloadFailuresCsv(runId: string, rows: PagedRunFailures["items"]) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function buildFallbackDetail(failure: RunFailure, stages: JobStage[]): RunFailureDetailResponse {
+  return {
+    ...failure,
+    stage_timeline: stages.map((stage) => ({
+      stage_name: stage.stage_name,
+      status: stage.status,
+      duration_ms: stage.duration_ms,
+      input_payload: stage.stage_name === failure.node ? failure.input_payload ?? {} : { record_id: failure.record_id },
+      output_payload: stage.stage_name === failure.node ? failure.output_payload ?? {} : { status: stage.status }
+    }))
+  };
 }
 
 const runFilters = [
@@ -71,6 +105,7 @@ export function JobManagementPage() {
   const [nodeStats, setNodeStats] = useState<FailureNodeStat[]>([]);
   const [selectedFailure, setSelectedFailure] = useState<RunFailureDetailResponse | null>(null);
   const [failureDrawerLoading, setFailureDrawerLoading] = useState(false);
+  const [drawerRecordId, setDrawerRecordId] = useState<string>("");
 
   const [runFilter, setRunFilter] = useState<string>("all");
   const [failureCategoryFilter, setFailureCategoryFilter] = useState<string>("all");
@@ -81,7 +116,22 @@ export function JobManagementPage() {
   const [failureSortOrder, setFailureSortOrder] = useState<FailureSortOrder>("asc");
 
   const [notice, setNotice] = useState<string>("");
-  const [busy, setBusy] = useState(false);
+  const [noticeTone, setNoticeTone] = useState<NoticeTone>("neutral");
+  const [triggeringJobId, setTriggeringJobId] = useState<number | null>(null);
+  const [retryingRunId, setRetryingRunId] = useState<string | null>(null);
+  const [retryingRecordId, setRetryingRecordId] = useState<string | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  function pushNotice(message: string, tone: NoticeTone = "neutral") {
+    setNotice(message);
+    setNoticeTone(tone);
+  }
+
+  function closeDrawer() {
+    setSelectedFailure(null);
+    setFailureDrawerLoading(false);
+    setDrawerRecordId("");
+  }
 
   async function loadJobs() {
     try {
@@ -91,7 +141,7 @@ export function JobManagementPage() {
         await loadRuns(result[0].id, runFilter);
       }
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Failed to load jobs");
+      pushNotice(err instanceof Error ? err.message : "Failed to load jobs", "error");
     }
   }
 
@@ -106,7 +156,7 @@ export function JobManagementPage() {
         return runResult[0]?.run_id ?? "";
       });
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Failed to load runs");
+      pushNotice(err instanceof Error ? err.message : "Failed to load runs", "error");
     }
   }
 
@@ -127,18 +177,25 @@ export function JobManagementPage() {
       setFailureSummary(summaryResult);
       setNodeStats(nodeStatsResult);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Failed to load run details");
+      pushNotice(err instanceof Error ? err.message : "Failed to load run details", "error");
     }
   }
 
   async function openFailureDrawer(recordId: string, showLoading = true) {
     if (!selectedRunId) return;
+    setDrawerRecordId(recordId);
     if (showLoading) setFailureDrawerLoading(true);
     try {
       const detail = await apiGet<RunFailureDetailResponse>(`/jobs/runs/${selectedRunId}/failures/${recordId}`);
       setSelectedFailure(detail);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Failed to load failure detail");
+      const fallback = failures.find((item) => item.record_id === recordId);
+      if (fallback) {
+        setSelectedFailure(buildFallbackDetail(fallback, stages));
+        pushNotice("Detail endpoint unavailable. Showing fallback snapshot.", "neutral");
+      } else {
+        pushNotice(err instanceof Error ? err.message : "Failed to load failure detail", "error");
+      }
     } finally {
       if (showLoading) setFailureDrawerLoading(false);
     }
@@ -150,49 +207,57 @@ export function JobManagementPage() {
         `/jobs/runs/${runId}/failures?category=${encodeURIComponent(failureCategoryFilter)}&node=${encodeURIComponent(failureNodeFilter)}&offset=0&limit=5000&sort_by=${failureSortBy}&sort_order=${failureSortOrder}`
       );
       downloadFailuresCsv(runId, result.items);
-      setNotice(`Exported ${result.items.length} failure records`);
+      pushNotice(`Exported ${result.items.length} failure records`, "success");
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Export failed");
+      pushNotice(err instanceof Error ? err.message : "Export failed", "error");
     }
   }
 
   async function trigger(jobId: number) {
-    setBusy(true);
+    setTriggeringJobId(jobId);
     try {
       const result = await apiPost<TriggerResponse>(`/jobs/${jobId}/trigger`);
-      setNotice(`Triggered run: ${result.run_id}`);
+      pushNotice(`Triggered run: ${result.run_id}`, "success");
       await loadRuns(jobId, runFilter);
       setFailurePage(1);
       setSelectedRunId(result.run_id);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Trigger failed");
+      pushNotice(err instanceof Error ? err.message : "Trigger failed", "error");
     } finally {
-      setBusy(false);
+      setTriggeringJobId(null);
     }
   }
 
   async function retry(runId: string) {
     if (!activeJobId) return;
-    setBusy(true);
+    setRetryingRunId(runId);
     try {
       const result = await apiPost<RetryResult>(`/jobs/runs/${runId}/retry`);
-      setNotice(`Retry queued: ${result.old_run_id} -> ${result.new_run_id}`);
+      pushNotice(`Retry queued: ${result.old_run_id} -> ${result.new_run_id}`, "success");
       await loadRuns(activeJobId, runFilter);
       setFailurePage(1);
       setSelectedRunId(result.new_run_id);
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Retry failed");
+      pushNotice(err instanceof Error ? err.message : "Retry failed", "error");
     } finally {
-      setBusy(false);
+      setRetryingRunId(null);
     }
   }
 
   async function retrySingleFailure(recordId: string) {
     if (!selectedRunId) return;
-    setBusy(true);
+    setRetryingRecordId(recordId);
     try {
       const result = await apiPost<RetrySingleFailureResult>(`/jobs/runs/${selectedRunId}/failures/${recordId}/retry`);
-      setNotice(`Single retry queued: ${result.record_id} -> ${result.retry_run_id}`);
+      setFailures((prev) =>
+        prev.map((item) =>
+          item.record_id === recordId ? { ...item, retry_status: "queued", retry_run_id: result.retry_run_id } : item
+        )
+      );
+      setSelectedFailure((prev) =>
+        prev && prev.record_id === recordId ? { ...prev, retry_status: "queued", retry_run_id: result.retry_run_id } : prev
+      );
+      pushNotice(`Single retry queued: ${result.record_id} -> ${result.retry_run_id}`, "success");
       if (activeJobId) {
         await loadRuns(activeJobId, runFilter);
       }
@@ -201,9 +266,9 @@ export function JobManagementPage() {
         await openFailureDrawer(recordId, false);
       }
     } catch (err) {
-      setNotice(err instanceof Error ? err.message : "Single retry failed");
+      pushNotice(err instanceof Error ? err.message : "Single retry failed", "error");
     } finally {
-      setBusy(false);
+      setRetryingRecordId(null);
     }
   }
 
@@ -212,7 +277,7 @@ export function JobManagementPage() {
     setFailurePage(1);
     setFailureCategoryFilter("all");
     setFailureNodeFilter("all");
-    setSelectedFailure(null);
+    closeDrawer();
   }
 
   useEffect(() => {
@@ -231,7 +296,7 @@ export function JobManagementPage() {
       setFailureTotal(0);
       setFailureSummary(null);
       setNodeStats([]);
-      setSelectedFailure(null);
+      closeDrawer();
       return;
     }
     void loadRunDetails(selectedRunId);
@@ -251,6 +316,21 @@ export function JobManagementPage() {
     return () => clearInterval(timer);
   }, [activeJobId, runFilter, selectedRunId, selectedFailure?.record_id]);
 
+  useEffect(() => {
+    if (!selectedFailure && !failureDrawerLoading) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeDrawer();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedFailure, failureDrawerLoading]);
+
+  useEffect(() => {
+    if (selectedFailure || failureDrawerLoading) {
+      closeButtonRef.current?.focus();
+    }
+  }, [selectedFailure, failureDrawerLoading]);
+
   const selectedRun = useMemo(
     () => runs.find((run) => run.run_id === selectedRunId) ?? null,
     [runs, selectedRunId]
@@ -259,11 +339,14 @@ export function JobManagementPage() {
   const maxNodeCount = useMemo(() => Math.max(1, ...nodeStats.map((item) => item.count)), [nodeStats]);
   const availableNodeFilters = useMemo(() => ["all", ...new Set(nodeStats.map((item) => item.node))], [nodeStats]);
   const totalPages = useMemo(() => Math.max(1, Math.ceil(failureTotal / failurePageSize)), [failureTotal, failurePageSize]);
+  const isDrawerOpen = Boolean(selectedFailure) || (failureDrawerLoading && Boolean(drawerRecordId));
 
   return (
     <div className="space-y-6">
       <Panel title="Job Management" description="Trigger jobs, inspect runs, and retry failures.">
-        <div className="mb-4 text-xs text-textSecondary">{notice || "Runs auto-refresh every 5 seconds."}</div>
+        <div className={["mb-4 rounded-xl border px-3 py-2 text-xs", noticeToneClass(noticeTone)].join(" ")}>
+          {notice || "Runs auto-refresh every 5 seconds."}
+        </div>
         <div className="space-y-2 text-sm">
           {jobs.map((job) => (
             <div key={job.code} className="grid grid-cols-[1.3fr_1fr_1fr_1.2fr] items-center gap-3 rounded-xl border border-white/10 p-3">
@@ -277,18 +360,17 @@ export function JobManagementPage() {
               </span>
               <div className="flex gap-2">
                 <button
-                  disabled={busy}
                   onClick={() => void loadRuns(job.id, runFilter)}
-                  className="rounded-lg border border-white/15 px-2 py-1 text-xs disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
                 >
                   Runs
                 </button>
                 <button
-                  disabled={busy}
+                  disabled={triggeringJobId === job.id}
                   onClick={() => void trigger(job.id)}
-                  className="rounded-lg border border-indigo-400/40 px-2 py-1 text-xs text-indigo-200 disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-indigo-400/40 px-2 py-1 text-xs text-indigo-200 transition-colors hover:border-indigo-300/60 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
                 >
-                  Trigger
+                  {triggeringJobId === job.id ? "Triggering..." : "Trigger"}
                 </button>
               </div>
             </div>
@@ -307,10 +389,10 @@ export function JobManagementPage() {
                   key={filter.key}
                   onClick={() => setRunFilter(filter.key)}
                   className={[
-                    "rounded-full border px-2 py-1 text-xs",
+                    "cursor-pointer rounded-full border px-2 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
                     runFilter === filter.key
                       ? "border-indigo-400/45 bg-indigo-500/20 text-indigo-100"
-                      : "border-white/15 text-textSecondary"
+                      : "border-white/15 text-textSecondary hover:border-white/25"
                   ].join(" ")}
                 >
                   {filter.label}
@@ -322,18 +404,28 @@ export function JobManagementPage() {
           <div className="space-y-2 text-sm">
             {runs.map((run) => (
               <div key={run.run_id} className="grid grid-cols-[1.2fr_0.8fr_0.9fr_0.9fr_1.3fr] items-center gap-3 rounded-xl border border-white/10 p-3">
-                <button onClick={() => selectRun(run.run_id)} className="text-left font-medium text-indigo-200 underline-offset-2 hover:underline">
+                <button
+                  onClick={() => selectRun(run.run_id)}
+                  className="cursor-pointer text-left font-medium text-indigo-200 underline-offset-2 transition-colors hover:text-indigo-100 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                >
                   {run.run_id}
                 </button>
                 <span className={["rounded-full border border-white/10 bg-white/[0.03] px-2 py-1 text-xs", statusClass(run.status)].join(" ")}>{run.status}</span>
                 <p className="text-emerald-300">Success {run.success_count}</p>
                 <p className="text-rose-300">Failed {run.failed_count}</p>
                 <div className="flex gap-2">
-                  <button disabled={busy} onClick={() => selectRun(run.run_id)} className="rounded-lg border border-white/15 px-2 py-1 text-xs disabled:opacity-50">
+                  <button
+                    onClick={() => selectRun(run.run_id)}
+                    className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                  >
                     Details
                   </button>
-                  <button disabled={busy} onClick={() => void retry(run.run_id)} className="rounded-lg border border-amber-400/40 px-2 py-1 text-xs text-amber-200 disabled:opacity-50">
-                    Retry
+                  <button
+                    disabled={retryingRunId === run.run_id}
+                    onClick={() => void retry(run.run_id)}
+                    className="cursor-pointer rounded-lg border border-amber-400/40 px-2 py-1 text-xs text-amber-200 transition-colors hover:border-amber-300/60 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+                  >
+                    {retryingRunId === run.run_id ? "Retrying..." : "Retry"}
                   </button>
                 </div>
               </div>
@@ -395,7 +487,10 @@ export function JobManagementPage() {
               <div className="rounded-xl border border-white/10 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-xs text-textSecondary">Failure details</p>
-                  <button onClick={() => void exportFailures(selectedRun.run_id)} className="rounded-lg border border-white/15 px-2 py-1 text-xs">
+                  <button
+                    onClick={() => void exportFailures(selectedRun.run_id)}
+                    className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                  >
                     Export CSV
                   </button>
                 </div>
@@ -459,46 +554,56 @@ export function JobManagementPage() {
                   {failures.length === 0 ? (
                     <p className="text-xs text-textSecondary">No failures in current filter</p>
                   ) : (
-                    failures.map((item) => (
-                      <div key={`${item.record_id}-${item.error_type}`} className="rounded-lg border border-white/10 p-2">
-                        <p className="text-xs text-indigo-200">{item.record_id} / {item.node}</p>
-                        <p className="text-xs text-textSecondary">{item.category} · {item.error_type}</p>
+                    failures.map((item) => {
+                      const waitingRetry = item.retry_status === "queued" || item.retry_status === "running";
+                      return (
+                        <div key={`${item.record_id}-${item.error_type}`} className="rounded-lg border border-white/10 p-2">
+                          <div className="mb-1 flex items-center justify-between gap-2">
+                            <p className="text-xs text-indigo-200">{item.record_id} / {item.node}</p>
+                            <span className={["rounded-full border px-2 py-0.5 text-[11px]", retryStatusClass(item.retry_status)].join(" ")}>
+                              {retryStatusLabel(item.retry_status)}
+                            </span>
+                          </div>
+                        <p className="text-xs text-textSecondary">{item.category} | {item.error_type}</p>
                         <p className="mt-1 text-xs">{item.detail}</p>
+                        {item.retry_run_id ? (
+                          <p className="mt-1 text-[11px] text-textSecondary">retry run: {item.retry_run_id}</p>
+                        ) : null}
                         <div className="mt-2 flex gap-2">
                           <button
-                            disabled={busy}
                             onClick={() => void openFailureDrawer(item.record_id)}
-                            className="rounded-lg border border-white/15 px-2 py-1 text-xs disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
                           >
                             View IO
                           </button>
                           <button
-                            disabled={busy}
+                            disabled={retryingRecordId === item.record_id || waitingRetry}
                             onClick={() => void retrySingleFailure(item.record_id)}
-                            className="rounded-lg border border-amber-400/40 px-2 py-1 text-xs text-amber-200 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-amber-400/40 px-2 py-1 text-xs text-amber-200 transition-colors hover:border-amber-300/60 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
                           >
-                            Retry Item
+                            {retryingRecordId === item.record_id ? "Retrying..." : waitingRetry ? "Queued..." : "Retry Item"}
                           </button>
                         </div>
-                      </div>
-                    ))
+                        </div>
+                      );
+                    })
                   )}
                 </div>
 
                 <div className="mt-3 flex items-center justify-between text-xs text-textSecondary">
-                  <span>Page {failurePage} / {totalPages} · Total {failureTotal}</span>
+                  <span>Page {failurePage} / {totalPages} | Total {failureTotal}</span>
                   <div className="flex gap-2">
                     <button
                       disabled={failurePage <= 1}
                       onClick={() => setFailurePage((p) => Math.max(1, p - 1))}
-                      className="rounded-lg border border-white/15 px-2 py-1 disabled:opacity-50"
+                      className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Prev
                     </button>
                     <button
                       disabled={failurePage >= totalPages}
                       onClick={() => setFailurePage((p) => Math.min(totalPages, p + 1))}
-                      className="rounded-lg border border-white/15 px-2 py-1 disabled:opacity-50"
+                      className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Next
                     </button>
@@ -512,22 +617,39 @@ export function JobManagementPage() {
         </Panel>
       </div>
 
-      {selectedFailure ? (
-        <div className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm">
-          <aside className="absolute right-0 top-0 h-full w-full max-w-lg border-l border-white/10 bg-[#07090D] p-4">
+      {isDrawerOpen ? (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeDrawer();
+          }}
+        >
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="failure-drawer-title"
+            className="absolute right-0 top-0 h-full w-full max-w-lg border-l border-white/10 bg-[#07090D] p-4"
+          >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">Failure Detail Drawer</h3>
-              <button className="rounded-lg border border-white/15 px-2 py-1 text-xs" onClick={() => setSelectedFailure(null)}>
+              <h3 id="failure-drawer-title" className="text-sm font-semibold">
+                Failure Detail Drawer
+              </h3>
+              <button
+                ref={closeButtonRef}
+                className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                onClick={closeDrawer}
+              >
                 Close
               </button>
             </div>
-            <div className="space-y-3 text-xs">
+            {selectedFailure ? (
+              <div className="space-y-3 text-xs">
               <div className="rounded-lg border border-white/10 p-2">
                 <p className="text-indigo-200">{selectedFailure.record_id}</p>
-                <p className="text-textSecondary">{selectedFailure.category} · {selectedFailure.error_type}</p>
+                <p className="text-textSecondary">{selectedFailure.category} | {selectedFailure.error_type}</p>
                 <p className="mt-1">{selectedFailure.detail}</p>
                 <p className="mt-1 text-textSecondary">
-                  Retry status: {selectedFailure.retry_status ?? "none"}
+                  Retry status: {retryStatusLabel(selectedFailure.retry_status)}
                   {selectedFailure.retry_run_id ? ` (${selectedFailure.retry_run_id})` : ""}
                 </p>
               </div>
@@ -536,7 +658,7 @@ export function JobManagementPage() {
                 <div className="space-y-2">
                   {selectedFailure.stage_timeline.map((stage) => (
                     <div key={stage.stage_name} className="rounded border border-white/10 p-2">
-                      <p>{stage.stage_name} · {stage.status} · {stage.duration_ms}ms</p>
+                      <p>{stage.stage_name} | {stage.status} | {stage.duration_ms}ms</p>
                     </div>
                   ))}
                 </div>
@@ -549,8 +671,11 @@ export function JobManagementPage() {
                 <p className="mb-1 text-textSecondary">Output Payload</p>
                 <pre className="overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(selectedFailure.output_payload ?? {}, null, 2)}</pre>
               </div>
-            </div>
-            {failureDrawerLoading ? <p className="mt-3 text-xs text-textSecondary">Loading...</p> : null}
+              </div>
+            ) : (
+              <p className="text-xs text-textSecondary">Preparing detail view for {drawerRecordId}...</p>
+            )}
+            {failureDrawerLoading ? <p className="mb-3 text-xs text-cyan-200">Loading failure details...</p> : null}
           </aside>
         </div>
       ) : null}
