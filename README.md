@@ -1,5 +1,7 @@
 # VOC AI Labeling Platform (MVP)
 
+本仓库中的开发代理与协作者，默认需要遵循仓库根目录下的 `AGENTS.md`。
+
 This repository contains a front-end and back-end MVP for VOC labeling operations.
 
 - Frontend: `frontend/` (React + Vite + Tailwind)
