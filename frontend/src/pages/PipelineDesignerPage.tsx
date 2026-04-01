@@ -3,6 +3,7 @@ import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { apiGet, apiPut, Job, JobPipelineConfig, JobPipelineUpdatePayload } from "../lib/api";
 import { PipelineNode, usePipelineStore } from "../store/pipelineStore";
+import { toApiNodes, toStoreNodes } from "./pipelineDesigner.helpers";
 
 type NoticeTone = "neutral" | "success" | "error";
 
@@ -13,24 +14,6 @@ function noticeToneClass(tone: NoticeTone) {
   if (tone === "success") return "border-emerald-400/35 bg-emerald-500/10 text-emerald-100";
   if (tone === "error") return "border-rose-400/35 bg-rose-500/10 text-rose-100";
   return "border-white/10 bg-white/[0.02] text-textSecondary";
-}
-
-function toStoreNodes(nodes: JobPipelineConfig["nodes"]): PipelineNode[] {
-  return nodes.map((node) => ({
-    key: node.key,
-    enabled: node.enabled,
-    model: node.model,
-    promptVersion: node.prompt_version
-  }));
-}
-
-function toApiNodes(nodes: PipelineNode[]): JobPipelineUpdatePayload["nodes"] {
-  return nodes.map((node) => ({
-    key: node.key,
-    enabled: node.enabled,
-    model: node.model,
-    prompt_version: node.promptVersion
-  }));
 }
 
 export function PipelineDesignerPage() {

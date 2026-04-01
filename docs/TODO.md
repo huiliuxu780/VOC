@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Backend critical API tests completed)
+Last updated: 2026-04-01 (Frontend key workflow tests completed)
 
 ## P0 - Core Delivery
 
@@ -29,7 +29,9 @@ Last updated: 2026-04-01 (Backend critical API tests completed)
 - [x] Add backend unit/integration tests for critical APIs.
   Done on: 2026-04-01.
   Delivered: `backend/tests/test_pipeline_execution_service.py` + `backend/tests/test_monitoring_settings_apis.py`, covering staged pipeline execution and monitoring/settings critical APIs.
-- [ ] Add frontend component/page tests for key workflows.
+- [x] Add frontend component/page tests for key workflows.
+  Done on: 2026-04-01.
+  Delivered: lightweight Vitest test baseline + workflow-focused tests for API client, pipeline store, and page helper logic (Prompt/Label/Pipeline).
 
 ## P2 - Engineering Quality
 

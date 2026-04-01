@@ -35,6 +35,42 @@
 
 ---
 
+## feature/frontend-workflow-tests
+
+- **用途：** 为前端关键页面流程补充自动化测试，覆盖核心交互与 API 联动行为
+- **任务类型：** 功能开发
+- **关联页面/模块：** 前端页面测试（Prompt / Label / Pipeline）
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/package.json`
+  - `frontend/package-lock.json`
+  - `frontend/vite.config.ts`
+  - `frontend/src/lib/api.test.ts`
+  - `frontend/src/store/pipelineStore.test.ts`
+  - `frontend/src/pages/promptManagement.helpers.ts`
+  - `frontend/src/pages/promptManagement.helpers.test.ts`
+  - `frontend/src/pages/labelManagement.helpers.ts`
+  - `frontend/src/pages/labelManagement.helpers.test.ts`
+  - `frontend/src/pages/pipelineDesigner.helpers.ts`
+  - `frontend/src/pages/pipelineDesigner.helpers.test.ts`
+  - `frontend/src/pages/PromptManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/PipelineDesignerPage.tsx`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 采用轻量测试策略接入 Vitest（node 环境），避免重依赖导致的安装/执行卡顿；新增 API client、pipeline store 以及 Prompt/Label/Pipeline 页面 helper 的关键流程测试，并将页面中的可测试逻辑抽离到 helper 模块复用。
+- **验证情况：**
+  - lint：不适用（frontend 当前未定义 lint 流程作为本任务门禁）
+  - tests：`cd frontend && npm run test` 通过（5 files, 13 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：核对关键工作流覆盖点（筛选、映射、payload 组装、store 状态变更）已入测试
+- **风险说明：** 首版采用轻量单测为主，尚未覆盖真实 DOM 交互与路由级集成，后续可按迭代引入更完整的页面交互测试。
+- **下一步：** 发起 PR 评审并合并；下一轮补充高价值页面的 DOM 交互测试与回归清单。
+
+---
+
 ## docs/branch-workflow
 
 - **用途：** 为仓库建立长期可复用的分支开发规范、分支记录机制和 PR 模板，保证后续 Codex 与人工协作都按统一流程执行
