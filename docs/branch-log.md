@@ -83,6 +83,33 @@
 
 ---
 
+## chore/api-contract-snapshot-ci
+
+- **用途：** 将 API 合同快照校验接入 CI，防止接口 schema 漂移未被发现
+- **任务类型：** 杂项
+- **关联页面/模块：** `backend` OpenAPI 导出脚本、CI workflow
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/scripts/check_openapi_snapshot.py`
+  - `backend/contracts/openapi.snapshot.json`
+  - `.github/workflows/api-contract-check.yml`
+  - `.gitignore`
+  - `README.md`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 `backend/scripts/check_openapi_snapshot.py`，支持本地/CI 生成并比对 OpenAPI 快照（含 `--update` 更新模式）；新增基线文件 `backend/contracts/openapi.snapshot.json` 与 CI 工作流 `.github/workflows/api-contract-check.yml`，在 PR 与主干提交时自动校验 schema 漂移并上传当前快照产物；在 `.gitignore` 忽略 `openapi.current.json` 临时输出，并在 `README.md` 增补本地执行命令。
+- **验证情况：**
+  - lint：不适用
+  - tests：不适用（本任务为 CI 守卫与文档流程）
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：`python backend/scripts/check_openapi_snapshot.py --baseline backend/contracts/openapi.snapshot.json` 本地通过；`--update` 已验证可更新基线
+- **风险说明：** 若变更者直接更新 baseline 而不审阅 diff，仍可能弱化漂移保护，需要在 PR 审查中强制检查快照差异。
+- **下一步：** 合并到 `main` 并在后续 API 变更 PR 中执行一次真实漂移校验演练。
+
+---
+
 ## docs/shadcn-skills-sync
 
 - **用途：** 将 shadcn/ui 官方仓库中的 `skills/shadcn` 内容同步到本项目，供本仓库协作与开发参考

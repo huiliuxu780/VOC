@@ -58,7 +58,14 @@ Prepare/create release tag:
 ## CI
 
 - `MVP Smoke Check`: runs on `push/pull_request` to `main`
+- `API Contract Check`: runs on `push/pull_request` to `main` and checks OpenAPI snapshot drift
 - `Release Check`: runs on version tags (`v*`) or manually via GitHub Actions
+
+Run API contract snapshot check locally:
+
+```powershell
+python backend/scripts/check_openapi_snapshot.py --baseline backend/contracts/openapi.snapshot.json
+```
 
 Release runbook: `docs/release-runbook.md`
 Changelog: `CHANGELOG.md`

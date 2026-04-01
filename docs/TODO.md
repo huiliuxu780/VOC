@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-02 (Release/changelog hygiene established)
+Last updated: 2026-04-02 (API contract snapshot CI enabled)
 
 ## P0 - Core Delivery
 
@@ -44,7 +44,9 @@ Last updated: 2026-04-02 (Release/changelog hygiene established)
 - [x] Add changelog/release notes hygiene (template + update discipline).
   Done on: 2026-04-02.
   Delivered: added `CHANGELOG.md`, `docs/release-notes-template.md`, and updated `docs/release-runbook.md` + `README.md` to enforce changelog-first release discipline.
-- [ ] Add API contract snapshot checks to CI (schema drift guard).
+- [x] Add API contract snapshot checks to CI (schema drift guard).
+  Done on: 2026-04-02.
+  Delivered: added OpenAPI snapshot checker script + baseline snapshot + dedicated GitHub Actions workflow (`API Contract Check`) with drift artifact upload.
 
 ## Ongoing Rules
 

@@ -55,6 +55,7 @@ next-env.d.ts
 backend/*.db
 backend/*.log
 backend/tmp_api.*.log
+backend/contracts/openapi.current.json
 .mvp-logs/
 .mvp-pids.json
 .release-check/
