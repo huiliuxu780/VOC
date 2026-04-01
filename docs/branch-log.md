@@ -45,7 +45,7 @@
   - `docs/voc-ai-labeling-platform-design.md`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 将设计文档明确标记为 UTF-8 中文主版本，并在文档头部增加编码与唯一维护版本说明；同步更新 TODO，完成“修复编码问题并保留干净中文版”任务项。
 - **验证情况：**
   - lint：不适用
@@ -54,7 +54,7 @@
   - build：不适用
   - 手工验证：`Get-Content -Encoding utf8 docs/voc-ai-labeling-platform-design.md` 抽样检查标题与章节可读；`rg` 未发现常见乱码片段
 - **风险说明：** 终端若使用非 UTF-8 默认编码查看文件，仍可能出现显示乱码，需要明确使用 UTF-8 打开/查看。
-- **下一步：** 合并到 `main`，后续文档统一按 UTF-8 维护并以该文件作为中文主版本。
+- **下一步：** 后续文档统一按 UTF-8 维护并以该文件作为中文主版本，新增设计文档时遵循同一编码约束。
 
 ---
 
