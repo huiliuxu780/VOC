@@ -134,3 +134,8 @@ export type MonitoringAlertRecord = {
   type: string;
   status: string;
 };
+
+export type MonitoringTrendPoint = {
+  t: string;
+  run: number;
+};

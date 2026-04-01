@@ -6,3 +6,8 @@ class DashboardMetrics(BaseModel):
     model_success_rate: float
     queue_backlog: int
     open_alerts: int
+
+
+class TrendPoint(BaseModel):
+    t: str
+    run: int

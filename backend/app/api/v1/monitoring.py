@@ -1,8 +1,22 @@
-﻿from fastapi import APIRouter
+from datetime import datetime, timedelta
 
-from app.schemas.monitoring import DashboardMetrics
+from fastapi import APIRouter
+
+from app.schemas.monitoring import DashboardMetrics, TrendPoint
 
 router = APIRouter()
+
+
+def _build_hourly_trend() -> list[TrendPoint]:
+    now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    baseline = [220, 280, 250, 320, 300, 355]
+    minute_factor = datetime.utcnow().minute % 7
+    points: list[TrendPoint] = []
+    for index, value in enumerate(baseline):
+        hour = now - timedelta(hours=(len(baseline) - 1 - index))
+        adjusted = value + (minute_factor * (1 if index % 2 == 0 else -1))
+        points.append(TrendPoint(t=hour.strftime("%H:%M"), run=max(80, adjusted)))
+    return points
 
 
 @router.get("/dashboard", response_model=DashboardMetrics)
@@ -13,6 +27,11 @@ def dashboard_metrics() -> DashboardMetrics:
         queue_backlog=1294,
         open_alerts=7,
     )
+
+
+@router.get("/trend", response_model=list[TrendPoint])
+def trend_metrics() -> list[TrendPoint]:
+    return _build_hourly_trend()
 
 
 @router.get("/datasources")
