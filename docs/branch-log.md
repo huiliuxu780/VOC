@@ -84,7 +84,7 @@
   - `frontend/src/pages/JobManagementPage.dom.test.ts`
   - `frontend/src/pages/PromptManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增 `happy-dom` 轻量 DOM 测试环境，并补充 Job/Prompt 两个高价值页面的交互级测试，覆盖按钮点击后的请求触发与状态提示；同时新增可复用 `domTestUtils` 统一渲染、等待与点击行为，降低页面级用例样板代码。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -93,7 +93,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：已检查 Trigger / Publish 等关键交互在测试中完成请求触发断言
 - **风险说明：** 当前仍以页面局部交互测试为主，尚未覆盖跨页面路由联动与真实网络层集成。
-- **下一步：** 发起 PR 评审并合并；下一轮补 `Monitoring/Label` 的 DOM 交互回归用例。
+- **下一步：** 下一轮补 `Monitoring/Label` 的 DOM 交互回归用例。
 
 ---
 
