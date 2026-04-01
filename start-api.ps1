@@ -30,10 +30,10 @@ function Resolve-PythonExe {
 
 $pythonExe = Resolve-PythonExe
 if (-not $pythonExe) {
-  Write-Host "未找到 Python 可执行文件。"
-  Write-Host "替换方案："
-  Write-Host "1) 安装 Python 3.11/3.12 并勾选 Add Python to PATH"
-  Write-Host "2) 或手动指定完整路径运行："
+  Write-Host "Python executable not found."
+  Write-Host "Try one of the following:"
+  Write-Host "1) Install Python 3.11/3.12 and enable 'Add Python to PATH'"
+  Write-Host "2) Run with an absolute Python path:"
   Write-Host "   C:\Users\<YourUser>\AppData\Local\Programs\Python\Python312\python.exe -m uvicorn app.main:app --reload --port $Port"
   exit 1
 }
