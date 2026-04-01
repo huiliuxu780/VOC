@@ -156,6 +156,7 @@ export function JobManagementPage() {
   const [triggeringJobId, setTriggeringJobId] = useState<number | null>(null);
   const [retryingRunId, setRetryingRunId] = useState<string | null>(null);
   const [retryingRecordId, setRetryingRecordId] = useState<string | null>(null);
+  const [showChangedOnly, setShowChangedOnly] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   function pushNotice(message: string, tone: NoticeTone = "neutral") {
@@ -167,6 +168,7 @@ export function JobManagementPage() {
     setSelectedFailure(null);
     setFailureDrawerLoading(false);
     setDrawerRecordId("");
+    setShowChangedOnly(false);
   }
 
   async function loadJobs() {
@@ -670,13 +672,26 @@ export function JobManagementPage() {
               <h3 id="failure-drawer-title" className="text-sm font-semibold">
                 Failure Detail Drawer
               </h3>
-              <button
-                ref={closeButtonRef}
-                className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
-                onClick={closeDrawer}
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowChangedOnly((value) => !value)}
+                  className={[
+                    "cursor-pointer rounded-lg border px-2 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
+                    showChangedOnly
+                      ? "border-indigo-400/40 bg-indigo-500/20 text-indigo-100"
+                      : "border-white/15 text-textSecondary hover:border-white/25"
+                  ].join(" ")}
+                >
+                  {showChangedOnly ? "Show All Fields" : "Only Changed"}
+                </button>
+                <button
+                  ref={closeButtonRef}
+                  className="cursor-pointer rounded-lg border border-white/15 px-2 py-1 text-xs transition-colors hover:border-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                  onClick={closeDrawer}
+                >
+                  Close
+                </button>
+              </div>
             </div>
             {selectedFailure ? (
               <div className="space-y-3 text-xs">
@@ -695,6 +710,7 @@ export function JobManagementPage() {
                   {selectedFailure.stage_timeline.map((stage) => {
                     const diffRows = buildTopLevelDiffRows(stage.input_payload, stage.output_payload);
                     const changedCount = diffRows.filter((row) => row.changed).length;
+                    const visibleRows = showChangedOnly ? diffRows.filter((row) => row.changed) : diffRows;
                     return (
                       <details
                         key={stage.stage_name}
@@ -730,21 +746,30 @@ export function JobManagementPage() {
 
                         <div className="mt-2 rounded border border-white/10 p-2">
                           <p className="mb-1 text-[11px] text-textSecondary">Top-level diff</p>
-                          <div className="space-y-1">
-                            {diffRows.map((row) => (
-                              <div
-                                key={`${stage.stage_name}-${row.key}`}
-                                className={[
-                                  "grid grid-cols-[1fr_1fr_1fr] gap-2 rounded px-2 py-1 text-[11px]",
-                                  row.changed ? "bg-amber-500/10 text-amber-100" : "bg-white/[0.02] text-textSecondary"
-                                ].join(" ")}
-                              >
-                                <span className="truncate font-medium">{row.key}</span>
-                                <span className="truncate">{row.inputText || "(empty)"}</span>
-                                <span className="truncate">{row.outputText || "(empty)"}</span>
+                          {visibleRows.length === 0 ? (
+                            <p className="text-[11px] text-textSecondary">No changed fields.</p>
+                          ) : (
+                            <div className="space-y-1">
+                              <div className="grid grid-cols-[1fr_1fr_1fr] gap-2 px-2 text-[11px] text-textSecondary">
+                                <span>field</span>
+                                <span>input</span>
+                                <span>output</span>
                               </div>
-                            ))}
-                          </div>
+                              {visibleRows.map((row) => (
+                                <div
+                                  key={`${stage.stage_name}-${row.key}`}
+                                  className={[
+                                    "grid grid-cols-[1fr_1fr_1fr] gap-2 rounded px-2 py-1 text-[11px]",
+                                    row.changed ? "bg-amber-500/10 text-amber-100" : "bg-white/[0.02] text-textSecondary"
+                                  ].join(" ")}
+                                >
+                                  <span className="truncate font-medium">{row.key}</span>
+                                  <span className="truncate">{row.inputText || "(empty)"}</span>
+                                  <span className="truncate">{row.outputText || "(empty)"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </details>
                     );
