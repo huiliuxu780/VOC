@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Prompt + Label + Datasource + Jobs config completed)
+Last updated: 2026-04-01 (Pipeline designer flow completed)
 
 ## P0 - Core Delivery
 
@@ -14,9 +14,9 @@ Last updated: 2026-04-01 (Prompt + Label + Datasource + Jobs config completed)
 - [x] Complete end-to-end Label management flow.
   Done on: 2026-04-01.
   Delivered: backend DB CRUD + move/delete + frontend list/detail/editor integration.
-- [ ] Complete end-to-end Pipeline designer flow.
-  Scope: save/load pipeline config per job + frontend integration.
-  Current state: local zustand-only state.
+- [x] Complete end-to-end Pipeline designer flow.
+  Done on: 2026-04-01.
+  Delivered: backend job pipeline config GET/PUT + frontend job-scoped load/edit/save integration.
 
 ## P1 - Platform Capability
 

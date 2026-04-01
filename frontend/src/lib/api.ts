@@ -58,6 +58,22 @@ export type Job = {
   enabled: boolean;
 };
 
+export type PipelineNodeConfig = {
+  key: string;
+  enabled: boolean;
+  model: string;
+  prompt_version: string;
+};
+
+export type JobPipelineConfig = {
+  job_id: number;
+  nodes: PipelineNodeConfig[];
+};
+
+export type JobPipelineUpdatePayload = {
+  nodes: PipelineNodeConfig[];
+};
+
 export type JobRun = {
   run_id: string;
   status: string;

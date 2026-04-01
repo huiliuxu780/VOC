@@ -18,3 +18,19 @@ class JobConfigOut(JobConfigIn):
 class TriggerResponse(BaseModel):
     run_id: str
     status: str
+
+
+class PipelineNodeConfig(BaseModel):
+    key: str
+    enabled: bool
+    model: str
+    prompt_version: str
+
+
+class JobPipelineConfigOut(BaseModel):
+    job_id: int
+    nodes: list[PipelineNodeConfig]
+
+
+class JobPipelineConfigUpdate(BaseModel):
+    nodes: list[PipelineNodeConfig]
