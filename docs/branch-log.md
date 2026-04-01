@@ -209,6 +209,29 @@
 
 ---
 
+## feature/monitoring-settings-tests
+
+- **用途：** 为 `/monitoring/queues`、`/monitoring/apis`、`/settings/models` 补充后端自动化测试
+- **任务类型：** 功能开发
+- **关联页面/模块：** 后端测试（`backend/tests`）、监控/设置 API（`monitoring.py`、`settings.py`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/tests/test_monitoring_settings_apis.py`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 `monitoring/settings` API 自动化测试，覆盖 `/monitoring/queues`、`/monitoring/apis` 返回结构与 `/settings/models` 的查询、upsert 更新、重复 key 异常校验；同时将 TODO 中“后端关键 API 测试”标记完成。
+- **验证情况：**
+  - lint：不适用（后端 Python）
+  - tests：`python -m pytest tests -q` 通过（6 passed）
+  - type-check：不适用
+  - build：不适用（测试任务）
+  - 手工验证：不适用（本轮以自动化测试为主）
+- **风险说明：** 现阶段测试仍依赖共享 sqlite 数据文件，未来可通过 fixture 隔离进一步降低数据串扰风险。
+- **下一步：** 发起 PR；后续可处理 `datetime.utcnow` 去弃用告警并引入独立测试数据库 fixture。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面

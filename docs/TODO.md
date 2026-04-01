@@ -1,6 +1,6 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Staged pipeline execution service completed)
+Last updated: 2026-04-01 (Backend critical API tests completed)
 
 ## P0 - Core Delivery
 
@@ -26,8 +26,9 @@ Last updated: 2026-04-01 (Staged pipeline execution service completed)
 - [x] Replace pipeline mock with staged execution service.
   Done on: 2026-04-01.
   Delivered: `run_pipeline_mock` replaced by background staged executor; trigger + run retry + single-failure retry now all schedule staged execution.
-- [ ] Add backend unit/integration tests for critical APIs.
-  Progress: added `backend/tests/test_pipeline_execution_service.py` covering trigger/retry/single-failure-retry staged execution paths.
+- [x] Add backend unit/integration tests for critical APIs.
+  Done on: 2026-04-01.
+  Delivered: `backend/tests/test_pipeline_execution_service.py` + `backend/tests/test_monitoring_settings_apis.py`, covering staged pipeline execution and monitoring/settings critical APIs.
 - [ ] Add frontend component/page tests for key workflows.
 
 ## P2 - Engineering Quality
