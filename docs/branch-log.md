@@ -153,7 +153,7 @@
   - `frontend/src/app/router.integration.dom.test.ts`
   - `frontend/src/test/domTestUtils.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 在路由级集成测试中补充异常恢复用例：监控页接口失败时展示错误提示，随后通过侧边导航回到标签页并恢复正常加载；同时新增按路径定位导航链接的测试工具，规避文案编码差异导致的断言脆弱性。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -162,7 +162,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：单独执行 `vitest run src/app/router.integration.dom.test.ts` 通过（2 tests）
 - **风险说明：** 异常回归仍基于 mock API，尚未覆盖真实网络抖动下的重试退避策略。
-- **下一步：** 发起 PR 评审并合并；后续补充重试按钮与错误边界 UI 的端到端回归。
+- **下一步：** 后续补充重试按钮与错误边界 UI 的端到端回归。
 
 ---
 
