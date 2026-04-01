@@ -46,7 +46,7 @@
   - `frontend/src/pages/labelManagement.helpers.ts`
   - `frontend/src/pages/labelManagement.helpers.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增关键词分段高亮 helper（大小写不敏感、支持多次命中），并在标签列表中对 `name/code` 命中片段进行高亮渲染；同时补充 helper 测试覆盖空关键词、未命中、重复命中场景。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -55,7 +55,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 关键字切分若处理不当可能造成重复字符高亮错位或空关键字渲染异常。
-- **下一步：** 发起 PR 评审；若通过则合并到 `main` 并将状态更新为 `merged`。
+- **下一步：** 已合并到 `main`，后续可在 DOM 交互测试中补充高亮渲染断言，防止视觉回归。
 
 ---
 
