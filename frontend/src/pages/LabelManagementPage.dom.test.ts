@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LabelRecord } from "../lib/api";
 import * as apiModule from "../lib/api";
 import { LabelManagementPage } from "./LabelManagementPage";
-import { changeInputValue, clickElement, findButtonByText, renderComponent, waitFor } from "../test/domTestUtils";
+import { changeInputValue, clickElement, findButtonByText, keyDownElement, renderComponent, waitFor } from "../test/domTestUtils";
 
 vi.mock("../lib/api", async () => {
   const actual = await vi.importActual("../lib/api");
@@ -180,6 +180,29 @@ describe("LabelManagementPage DOM interactions", () => {
       expect(container.textContent).toContain("Showing 2 / 2 labels");
       expect(container.querySelector("button[aria-label='Clear search']")).toBeNull();
       expect(Array.from(container.querySelectorAll("mark")).length).toBe(0);
+    });
+
+    await unmount();
+  });
+
+  it("selects first filtered label when pressing Enter in search input", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel]);
+
+    const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Loaded 2 labels");
+    });
+
+    const searchInput = container.querySelector("input[aria-label='Search labels']");
+    expect(searchInput).not.toBeNull();
+
+    await changeInputValue(searchInput as HTMLInputElement, "install");
+    await keyDownElement(searchInput as HTMLInputElement, "Enter");
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Selected label #2 from search results");
     });
 
     await unmount();

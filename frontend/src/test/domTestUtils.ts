@@ -102,3 +102,9 @@ export async function changeInputValue(
     element.dispatchEvent(new Event("change", { bubbles: true }));
   });
 }
+
+export async function keyDownElement(element: HTMLElement, key: string): Promise<void> {
+  await act(async () => {
+    element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+  });
+}

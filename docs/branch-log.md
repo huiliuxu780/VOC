@@ -35,6 +35,30 @@
 
 ---
 
+## feature/label-search-enter-select
+
+- **用途：** 增强标签搜索键盘效率，支持 Enter 快速选中首条匹配项
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `frontend/src/test/domTestUtils.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在搜索输入框新增 Enter 快捷行为：当存在匹配结果时，按 Enter 自动选中首条命中并更新顶部提示；同时在测试工具新增 `keyDownElement`，并补充 DOM 回归用例覆盖 Enter 选中流程。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 5 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 键盘事件若处理不当，可能误触发表单默认提交或与输入法组合输入冲突。
+- **下一步：** 发起 PR 评审并合并；后续可补充“上下方向键切换候选 + Enter 确认”完整键盘导航能力。
+
+---
+
 ## feature/label-search-ux-polish
 
 - **用途：** 优化标签页搜索交互，提升筛选反馈与清空操作效率

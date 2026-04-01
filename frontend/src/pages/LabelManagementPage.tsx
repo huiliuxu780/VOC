@@ -83,6 +83,9 @@ export function LabelManagementPage() {
   const filteredLabels = useMemo(() => {
     return filterLabels(labels, deferredSearchText, levelFilter);
   }, [labels, deferredSearchText, levelFilter]);
+  const liveFilteredLabels = useMemo(() => {
+    return filterLabels(labels, searchText, levelFilter);
+  }, [labels, searchText, levelFilter]);
   const hasSearchText = searchText.trim().length > 0;
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
@@ -237,6 +240,13 @@ export function LabelManagementPage() {
                   if (event.key === "Escape" && hasSearchText) {
                     event.preventDefault();
                     setSearchText("");
+                    return;
+                  }
+                  if (event.key === "Enter" && liveFilteredLabels.length > 0) {
+                    event.preventDefault();
+                    const firstMatch = liveFilteredLabels[0];
+                    setSelectedLabelId(firstMatch.id);
+                    setNotice(`Selected label #${firstMatch.id} from search results`);
                   }
                 }}
                 placeholder="Search by name or code..."
