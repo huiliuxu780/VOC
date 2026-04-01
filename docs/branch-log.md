@@ -98,7 +98,7 @@
   - `frontend/src/lib/api.ts`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增 job 级 pipeline 配置 GET/PUT API 与配置归一化逻辑；前端 Pipeline 页面接入按 job 读取、编辑、保存与重载；store 从本地 seed-only 升级为可被后端配置驱动。
 - **验证情况：**
   - lint：未执行（仓库当前未配置前端 lint 脚本）
@@ -107,7 +107,7 @@
   - build：前端 `npm run build` 通过；后端 `python -m compileall app` 通过
   - 手工验证：函数级冒烟通过（`get_job_pipeline`/`update_job_pipeline` 能保存并读回配置）
 - **风险说明：** 需要确保现有 pipeline 本地交互不回归，并兼容历史 job 的空配置。
-- **下一步：** 发起 PR，并在下一轮补充 pipeline API 与页面自动化测试。
+- **下一步：** 在下一轮补充 pipeline API 与页面自动化测试，并推进 P1 缺失 API 交付。
 
 ---
 
