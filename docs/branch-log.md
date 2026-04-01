@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 标签列表搜索框新增可见筛选反馈（`Showing x / y`）与一键 `Clear` 清空操作；支持键盘 `Escape` 快速清空；新增 DOM 回归测试覆盖“筛选命中 + 清空恢复”流程，确保高亮与筛选状态同步正确。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 新增搜索交互若未处理好键盘事件与受控输入同步，可能引入测试不稳定或输入行为异常。
-- **下一步：** 发起 PR 评审并合并；后续可补充“按 Enter 保持焦点/触发首条选中”等键盘效率交互。
+- **下一步：** 已合并到 `main`；后续可补充“按 Enter 保持焦点/触发首条选中”等键盘效率交互。
 
 ---
 
