@@ -149,7 +149,7 @@
   - `README.md`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 在监控模块补齐 `/monitoring/queues`、`/monitoring/apis`；新增设置模块并实现 `/settings/models` 的 `GET/PUT`（含模型配置 seed 与 upsert 更新）；路由已接入并同步文档。
 - **验证情况：**
   - lint：不适用（后端 Python）
@@ -158,7 +158,7 @@
   - build：`python -m compileall app` 通过
   - 手工验证：函数级冒烟通过（queues/apis 可读；settings/models 支持查询与更新）
 - **风险说明：** 若返回字段与前端未来接入预期不一致，后续仍需一次字段对齐。
-- **下一步：** 发起 PR，并在后续迭代补充这三组 API 的自动化测试与前端接入页面。
+- **下一步：** 在后续迭代补充这三组 API 的自动化测试与前端接入页面，并继续推进 `run_pipeline_mock` 替换。
 
 ---
 
