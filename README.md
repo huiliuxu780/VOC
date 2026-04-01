@@ -109,6 +109,7 @@ python -m uvicorn app.main:app --reload --port 8000
 - `/api/v1/prompts`
 - `/api/v1/jobs`
 - `/api/v1/monitoring`
+- `/api/v1/settings`
 
 ## Current MVP Capabilities
 

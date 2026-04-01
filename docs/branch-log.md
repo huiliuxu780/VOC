@@ -134,6 +134,34 @@
 
 ---
 
+## feature/missing-monitoring-settings-apis
+
+- **用途：** 补齐设计文档中缺失的 P1 API：`/monitoring/queues`、`/monitoring/apis`、`/settings/models`
+- **任务类型：** 功能开发
+- **关联页面/模块：** 后端监控与系统设置 API（`backend/app/api/v1`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/app/api/v1/monitoring.py`
+  - `backend/app/api/v1/settings.py`
+  - `backend/app/api/v1/router.py`
+  - `backend/app/schemas/settings.py`
+  - `backend/app/schemas/__init__.py`
+  - `README.md`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在监控模块补齐 `/monitoring/queues`、`/monitoring/apis`；新增设置模块并实现 `/settings/models` 的 `GET/PUT`（含模型配置 seed 与 upsert 更新）；路由已接入并同步文档。
+- **验证情况：**
+  - lint：不适用（后端 Python）
+  - tests：未执行（当前仓库无对应自动化测试）
+  - type-check：不适用
+  - build：`python -m compileall app` 通过
+  - 手工验证：函数级冒烟通过（queues/apis 可读；settings/models 支持查询与更新）
+- **风险说明：** 若返回字段与前端未来接入预期不一致，后续仍需一次字段对齐。
+- **下一步：** 发起 PR，并在后续迭代补充这三组 API 的自动化测试与前端接入页面。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面
