@@ -31,6 +31,13 @@ export async function apiPut<T>(path: string, payload: unknown): Promise<T> {
   return parseResponse<T>(response);
 }
 
+export async function apiDelete<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: "DELETE"
+  });
+  return parseResponse<T>(response);
+}
+
 export type DataSource = {
   id: number;
   name: string;
@@ -195,4 +202,27 @@ export type PromptTestResponse = {
     score: number;
     reason: string;
   };
+};
+
+export type LabelRecord = {
+  id: number;
+  category_id: number;
+  parent_id: number | null;
+  level: number;
+  name: string;
+  code: string;
+  is_leaf: boolean;
+  llm_enabled: boolean;
+  default_prompt_version: string;
+};
+
+export type LabelUpsertPayload = {
+  category_id: number;
+  parent_id: number | null;
+  level: number;
+  name: string;
+  code: string;
+  is_leaf: boolean;
+  llm_enabled: boolean;
+  default_prompt_version: string;
 };
