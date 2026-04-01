@@ -6,6 +6,7 @@ from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
+from app.models.config import DataSourceConfig, JobConfig
 from app.models.runtime import JobRun, JobRunStage, RunFailureDetail
 from app.schemas.job import JobConfigIn, JobConfigOut, TriggerResponse
 from app.services.pipeline_runner import run_pipeline_mock
@@ -14,27 +15,31 @@ router = APIRouter()
 
 DEFAULT_STAGES = ["pre_filter", "relevance_analysis", "label_classify", "sentiment_analysis"]
 
-_jobs: list[JobConfigOut] = [
-    JobConfigOut(
-        id=1,
-        name="HTTP Review Batch",
-        code="JOB_HTTP_REVIEW",
-        job_type="batch",
-        datasource_id=1,
-        enabled=True,
-    ),
-    JobConfigOut(
-        id=2,
-        name="Kafka Stream Consumer",
-        code="JOB_KAFKA_STREAM",
-        job_type="stream",
-        datasource_id=3,
-        enabled=True,
-    ),
+_seed_jobs: list[dict] = [
+    {
+        "name": "HTTP Review Batch",
+        "code": "JOB_HTTP_REVIEW",
+        "job_type": "batch",
+        "datasource_id": 1,
+        "schedule_expr": "manual",
+        "enabled": True,
+        "output_type": "table",
+        "pipeline_config": {},
+    },
+    {
+        "name": "Kafka Stream Consumer",
+        "code": "JOB_KAFKA_STREAM",
+        "job_type": "stream",
+        "datasource_id": 3,
+        "schedule_expr": "*/5 * * * *",
+        "enabled": True,
+        "output_type": "table",
+        "pipeline_config": {},
+    },
 ]
 
-_seed_runs: dict[int, list[dict]] = {
-    1: [
+_seed_runs: dict[str, list[dict]] = {
+    "JOB_HTTP_REVIEW": [
         {
             "run_id": "RUN-20260331-001",
             "status": "success",
@@ -52,7 +57,7 @@ _seed_runs: dict[int, list[dict]] = {
             "ended_at": "2026-03-31T11:07:49",
         },
     ],
-    2: [
+    "JOB_KAFKA_STREAM": [
         {
             "run_id": "RUN-20260331-003",
             "status": "running",
@@ -149,12 +154,42 @@ _seed_failures: dict[str, list[dict]] = {
 }
 
 
+def _to_job_out(item: JobConfig) -> JobConfigOut:
+    return JobConfigOut(
+        id=item.id,
+        name=item.name,
+        code=item.code,
+        job_type=item.job_type,
+        datasource_id=item.datasource_id,
+        schedule_expr=item.schedule_expr,
+        output_type=item.output_type,
+        enabled=item.enabled,
+    )
+
+
+def _seed_jobs_if_empty(db: Session) -> None:
+    count = int(db.scalar(select(func.count()).select_from(JobConfig)) or 0)
+    if count > 0:
+        return
+
+    for item in _seed_jobs:
+        db.add(JobConfig(**item))
+    db.commit()
+
+
+def _refresh_jobs(db: Session) -> None:
+    _seed_jobs_if_empty(db)
+
+
 def _seed_runtime_if_empty(db: Session) -> None:
     run_count = int(db.scalar(select(func.count()).select_from(JobRun)) or 0)
     if run_count > 0:
         return
 
-    for job_id, run_items in _seed_runs.items():
+    for job_code, run_items in _seed_runs.items():
+        job_id = db.scalar(select(JobConfig.id).where(JobConfig.code == job_code))
+        if job_id is None:
+            continue
         for run in run_items:
             started_at = datetime.fromisoformat(run["started_at"]) if run["started_at"] else datetime.utcnow()
             ended_at = datetime.fromisoformat(run["ended_at"]) if run["ended_at"] else None
@@ -292,6 +327,7 @@ def _sync_failure_retry_status(db: Session) -> None:
 
 
 def _refresh_runtime(db: Session) -> None:
+    _refresh_jobs(db)
     _seed_runtime_if_empty(db)
     _advance_running_runs(db)
     _sync_failure_retry_status(db)
@@ -352,21 +388,36 @@ def _failure_detail_with_timeline(db: Session, item: RunFailureDetail) -> dict:
 
 
 @router.get("", response_model=list[JobConfigOut])
-def list_jobs() -> list[JobConfigOut]:
-    return _jobs
+def list_jobs(db: Session = Depends(get_db)) -> list[JobConfigOut]:
+    _refresh_jobs(db)
+    rows = db.scalars(select(JobConfig).order_by(asc(JobConfig.id))).all()
+    return [_to_job_out(row) for row in rows]
 
 
 @router.post("", response_model=JobConfigOut)
-def create_job(payload: JobConfigIn) -> JobConfigOut:
-    item = JobConfigOut(id=len(_jobs) + 1, enabled=True, **payload.model_dump())
-    _jobs.append(item)
-    return item
+def create_job(payload: JobConfigIn, db: Session = Depends(get_db)) -> JobConfigOut:
+    _refresh_jobs(db)
+
+    code_exists = db.scalar(select(JobConfig).where(JobConfig.code == payload.code))
+    if code_exists is not None:
+        raise HTTPException(status_code=409, detail="job code already exists")
+
+    datasource = db.scalar(select(DataSourceConfig).where(DataSourceConfig.id == payload.datasource_id))
+    if datasource is None:
+        raise HTTPException(status_code=404, detail="datasource not found")
+
+    row = JobConfig(enabled=True, pipeline_config={}, **payload.model_dump())
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return _to_job_out(row)
 
 
 @router.post("/{job_id}/trigger", response_model=TriggerResponse)
 def trigger_job(job_id: int, db: Session = Depends(get_db)) -> TriggerResponse:
     _refresh_runtime(db)
-    if job_id not in [job.id for job in _jobs]:
+    job = db.scalar(select(JobConfig).where(JobConfig.id == job_id))
+    if job is None:
         raise HTTPException(status_code=404, detail="job not found")
 
     run_id = f"RUN-{uuid4().hex[:10]}"
@@ -394,6 +445,10 @@ def trigger_job(job_id: int, db: Session = Depends(get_db)) -> TriggerResponse:
 @router.get("/{job_id}/runs")
 def list_job_runs(job_id: int, status: str | None = Query(default=None), db: Session = Depends(get_db)) -> list[dict]:
     _refresh_runtime(db)
+    job = db.scalar(select(JobConfig.id).where(JobConfig.id == job_id))
+    if job is None:
+        raise HTTPException(status_code=404, detail="job not found")
+
     stmt = select(JobRun).where(JobRun.job_id == job_id)
     if status and status != "all":
         stmt = stmt.where(JobRun.status == status)
