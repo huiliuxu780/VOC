@@ -46,7 +46,7 @@
   - `docs/branch-log.md`
   - `.github/pull_request_template.md`
   - `README.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增仓库级代理规则文件、中文分支记录模板以及中文 PR 模板，并在 README 顶部补充 AGENTS.md 约束提示，固化分支开发、记录、验证、汇报方式。
 - **验证情况：**
   - lint：不适用
@@ -55,7 +55,7 @@
   - build：不适用
   - 手工验证：已逐项检查字段完整性与可执行性
 - **风险说明：** 后续若团队成员未持续更新分支记录，实际执行效果会打折扣。
-- **下一步：** 将这四份文件提交到仓库，并在后续任务中按本规范执行。
+- **下一步：** 规范已入主干，后续所有开发任务按该流程执行并持续维护分支记录。
 
 ---
 
@@ -70,7 +70,7 @@
   - `backend/app/api/v1/jobs.py`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** datasource/jobs 列表与创建改为 DB CRUD，补充 seed、唯一性校验与关联校验；运行种子改为按 job code 关联；更新项目 TODO 为已完成。
 - **验证情况：**
   - lint：未执行（本次未涉及前端/样式规范项）
@@ -79,7 +79,7 @@
   - build：不适用
   - 手工验证：`python -m compileall app` 通过；函数级冒烟验证通过（创建 datasource/job + trigger + runs 查询）
 - **风险说明：** datasource 默认 seed 文案改为英文，可能与前端展示预期存在差异。
-- **下一步：** 发起 PR，建议与 `docs/branch-workflow` 分支按顺序合并（先文档规范，后功能改动）。
+- **下一步：** 持续补充 datasource/jobs 自动化测试，并继续推进下一个 P0（Pipeline Designer 持久化）。
 
 ---
 
