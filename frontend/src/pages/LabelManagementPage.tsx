@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { apiDelete, apiGet, apiPost, apiPut, LabelRecord, LabelUpsertPayload } from "../lib/api";
-import { filterLabels, LevelFilter } from "./labelManagement.helpers";
+import { filterLabels, LevelFilter, splitHighlightParts } from "./labelManagement.helpers";
 
 type LabelFormValues = {
   category_id: number;
@@ -32,6 +32,20 @@ function levelClass(level: number) {
   if (level === 2) return "border-cyan-400/45 bg-cyan-500/15 text-cyan-100";
   if (level === 3) return "border-amber-400/45 bg-amber-500/15 text-amber-100";
   return "border-rose-400/45 bg-rose-500/15 text-rose-100";
+}
+
+function renderHighlightedText(text: string, searchText: string, keyPrefix: string) {
+  return splitHighlightParts(text, searchText).map((part, index) => {
+    if (!part.matched) return <span key={`${keyPrefix}-${index}`}>{part.text}</span>;
+    return (
+      <mark
+        key={`${keyPrefix}-${index}`}
+        className="rounded-sm bg-amber-300/20 px-0.5 text-amber-100"
+      >
+        {part.text}
+      </mark>
+    );
+  });
 }
 
 export function LabelManagementPage() {
@@ -236,10 +250,12 @@ export function LabelManagementPage() {
                 ].join(" ")}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="font-medium text-indigo-100">{item.name}</p>
+                  <p className="font-medium text-indigo-100">{renderHighlightedText(item.name, deferredSearchText, `name-${item.id}`)}</p>
                   <span className={["rounded-full border px-2 py-0.5 text-[11px]", levelClass(item.level)].join(" ")}>{`L${item.level}`}</span>
                 </div>
-                <p className="text-xs text-textSecondary">code: {item.code} | children: {childCountMap[item.id] ?? 0}</p>
+                <p className="text-xs text-textSecondary">
+                  code: {renderHighlightedText(item.code, deferredSearchText, `code-${item.id}`)} | children: {childCountMap[item.id] ?? 0}
+                </p>
               </button>
             ))}
           </div>

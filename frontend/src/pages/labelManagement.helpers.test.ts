@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LabelRecord } from "../lib/api";
-import { filterLabels } from "./labelManagement.helpers";
+import { filterLabels, splitHighlightParts } from "./labelManagement.helpers";
 
 const labels: LabelRecord[] = [
   {
@@ -38,5 +38,23 @@ describe("labelManagement helpers", () => {
     expect(filterLabels(labels, "install", "all")).toEqual([labels[1]]);
     expect(filterLabels(labels, "l1_root", "1")).toEqual([labels[0]]);
     expect(filterLabels(labels, "l1_root", "2")).toEqual([]);
+  });
+
+  it("splits highlight parts with case-insensitive matching", () => {
+    expect(splitHighlightParts("Install Delay", "inst")).toEqual([
+      { text: "Inst", matched: true },
+      { text: "all Delay", matched: false }
+    ]);
+
+    expect(splitHighlightParts("ALPHA-beta-alpha", "alpha")).toEqual([
+      { text: "ALPHA", matched: true },
+      { text: "-beta-", matched: false },
+      { text: "alpha", matched: true }
+    ]);
+  });
+
+  it("returns plain text part when search keyword is empty or not found", () => {
+    expect(splitHighlightParts("Root Service", "")).toEqual([{ text: "Root Service", matched: false }]);
+    expect(splitHighlightParts("Root Service", "xyz")).toEqual([{ text: "Root Service", matched: false }]);
   });
 });
