@@ -19,6 +19,18 @@ Stop both services:
 .\stop-mvp.ps1
 ```
 
+Run smoke check (health + key APIs + alert flow):
+
+```powershell
+.\smoke-mvp.ps1
+```
+
+Skip alert lifecycle mutation in smoke check:
+
+```powershell
+.\smoke-mvp.ps1 -SkipAlertFlow
+```
+
 Default URLs:
 
 - Frontend: `http://127.0.0.1:5173`
