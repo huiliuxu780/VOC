@@ -59,6 +59,30 @@
 
 ---
 
+## feature/config-db-persistence
+
+- **用途：** 将 datasource/jobs 配置从内存数组切换为数据库持久化，完成配置模块 P0 持久化收口
+- **任务类型：** 功能开发
+- **关联页面/模块：** 后端配置 API（`/api/v1/datasources`、`/api/v1/jobs`）
+- **基于分支：** docs/branch-workflow
+- **主要改动文件：**
+  - `backend/app/api/v1/datasource.py`
+  - `backend/app/api/v1/jobs.py`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** datasource/jobs 列表与创建改为 DB CRUD，补充 seed、唯一性校验与关联校验；运行种子改为按 job code 关联；更新项目 TODO 为已完成。
+- **验证情况：**
+  - lint：未执行（本次未涉及前端/样式规范项）
+  - tests：未执行（仓库当前无 datasource/jobs 自动化用例）
+  - type-check：不适用（Python 后端）
+  - build：不适用
+  - 手工验证：`python -m compileall app` 通过；函数级冒烟验证通过（创建 datasource/job + trigger + runs 查询）
+- **风险说明：** datasource 默认 seed 文案改为英文，可能与前端展示预期存在差异。
+- **下一步：** 发起 PR，建议与 `docs/branch-workflow` 分支按顺序合并（先文档规范，后功能改动）。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面

@@ -1,12 +1,13 @@
 # Project TODO
 
-Last updated: 2026-04-01 (Prompt + Label flow completed)
+Last updated: 2026-04-01 (Prompt + Label + Datasource + Jobs config completed)
 
 ## P0 - Core Delivery
 
-- [ ] Persist config modules to database instead of in-memory arrays.
+- [x] Persist config modules to database instead of in-memory arrays.
   Scope: `datasource`, `labels`, `prompts`, `jobs` config CRUD.
-  Progress: `prompts/labels` completed; `datasource/jobs config` still in-memory.
+  Done on: 2026-04-01.
+  Delivered: datasource/jobs API config storage switched from in-memory arrays to DB tables with startup-safe seed + validation.
 - [x] Complete end-to-end Prompt management flow.
   Done on: 2026-04-01.
   Delivered: backend DB CRUD + publish/test + frontend list/editor/test integration.
