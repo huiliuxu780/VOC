@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { apiDelete, apiGet, apiPost, apiPut, LabelRecord, LabelUpsertPayload } from "../lib/api";
+import { filterLabels, LevelFilter } from "./labelManagement.helpers";
 
 type LabelFormValues = {
   category_id: number;
@@ -14,8 +15,6 @@ type LabelFormValues = {
   llm_enabled: boolean;
   default_prompt_version: string;
 };
-
-type LevelFilter = "all" | "1" | "2" | "3" | "4";
 
 const defaultFormValues: LabelFormValues = {
   category_id: 1,
@@ -68,13 +67,7 @@ export function LabelManagementPage() {
   }, [labels]);
 
   const filteredLabels = useMemo(() => {
-    const keyword = deferredSearchText.trim().toLowerCase();
-    return labels.filter((item) => {
-      const hitLevel = levelFilter === "all" || item.level === Number(levelFilter);
-      if (!hitLevel) return false;
-      if (!keyword) return true;
-      return item.name.toLowerCase().includes(keyword) || item.code.toLowerCase().includes(keyword);
-    });
+    return filterLabels(labels, deferredSearchText, levelFilter);
   }, [labels, deferredSearchText, levelFilter]);
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);

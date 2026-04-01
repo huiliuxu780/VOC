@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { apiGet, apiPost, apiPut, PromptRecord, PromptTestResponse, PromptUpsertPayload } from "../lib/api";
+import { filterPrompts } from "./promptManagement.helpers";
 
 type PromptFormValues = {
   label_node_id: number;
@@ -51,14 +52,7 @@ export function PromptManagementPage() {
   );
 
   const filteredPrompts = useMemo(() => {
-    const keyword = deferredSearchText.trim().toLowerCase();
-    if (!keyword) return prompts;
-    return prompts.filter(
-      (item) =>
-        item.name.toLowerCase().includes(keyword) ||
-        item.version.toLowerCase().includes(keyword) ||
-        String(item.label_node_id).includes(keyword)
-    );
+    return filterPrompts(prompts, deferredSearchText);
   }, [prompts, deferredSearchText]);
 
   async function loadPrompts() {
