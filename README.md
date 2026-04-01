@@ -31,6 +31,20 @@ Skip alert lifecycle mutation in smoke check:
 .\smoke-mvp.ps1 -SkipAlertFlow
 ```
 
+Run release checklist (build + smoke + API snapshots):
+
+```powershell
+.\release-check.ps1
+```
+
+By default, the checklist runs smoke with `-SkipAlertFlow` and writes artifacts under `.release-check/<timestamp>/`.
+
+Run release checklist and include alert lifecycle mutation:
+
+```powershell
+.\release-check.ps1 -RunAlertFlow
+```
+
 Default URLs:
 
 - Frontend: `http://127.0.0.1:5173`

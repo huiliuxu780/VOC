@@ -57,3 +57,4 @@ backend/*.log
 backend/tmp_api.*.log
 .mvp-logs/
 .mvp-pids.json
+.release-check/
