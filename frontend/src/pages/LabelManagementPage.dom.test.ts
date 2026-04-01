@@ -149,4 +149,39 @@ describe("LabelManagementPage DOM interactions", () => {
 
     await unmount();
   });
+
+  it("shows filtered count and clears search by clear button", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel]);
+
+    const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Loaded 2 labels");
+      expect(container.textContent).toContain("Showing 2 / 2 labels");
+    });
+
+    const searchInput = container.querySelector("input[aria-label='Search labels']");
+    expect(searchInput).not.toBeNull();
+
+    await changeInputValue(searchInput as HTMLInputElement, "install");
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Showing 1 / 2 labels");
+      const marks = Array.from(container.querySelectorAll("mark"));
+      expect(marks.map((node) => node.textContent?.toLowerCase())).toContain("install");
+    });
+
+    const clearButton = container.querySelector("button[aria-label='Clear search']") as HTMLButtonElement | null;
+    expect(clearButton).not.toBeNull();
+    await clickElement(clearButton as HTMLButtonElement);
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Showing 2 / 2 labels");
+      expect(container.querySelector("button[aria-label='Clear search']")).toBeNull();
+      expect(Array.from(container.querySelectorAll("mark")).length).toBe(0);
+    });
+
+    await unmount();
+  });
 });

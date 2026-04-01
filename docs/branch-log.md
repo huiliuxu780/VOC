@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-search-ux-polish
+
+- **用途：** 优化标签页搜索交互，提升筛选反馈与清空操作效率
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 标签列表搜索框新增可见筛选反馈（`Showing x / y`）与一键 `Clear` 清空操作；支持键盘 `Escape` 快速清空；新增 DOM 回归测试覆盖“筛选命中 + 清空恢复”流程，确保高亮与筛选状态同步正确。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 4 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 新增搜索交互若未处理好键盘事件与受控输入同步，可能引入测试不稳定或输入行为异常。
+- **下一步：** 发起 PR 评审并合并；后续可补充“按 Enter 保持焦点/触发首条选中”等键盘效率交互。
+
+---
+
 ## feature/label-highlight-dom-regression
 
 - **用途：** 为标签搜索高亮补充 DOM 回归测试，防止高亮渲染在后续迭代中退化

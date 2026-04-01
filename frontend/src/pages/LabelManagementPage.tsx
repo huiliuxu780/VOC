@@ -83,6 +83,7 @@ export function LabelManagementPage() {
   const filteredLabels = useMemo(() => {
     return filterLabels(labels, deferredSearchText, levelFilter);
   }, [labels, deferredSearchText, levelFilter]);
+  const hasSearchText = searchText.trim().length > 0;
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
   const watchedParentId = watch("parent_id");
@@ -227,12 +228,35 @@ export function LabelManagementPage() {
                 </button>
               ))}
             </div>
-            <input
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search by name or code..."
-              className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
-            />
+            <div className="relative">
+              <input
+                value={searchText}
+                aria-label="Search labels"
+                onChange={(event) => setSearchText(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && hasSearchText) {
+                    event.preventDefault();
+                    setSearchText("");
+                  }
+                }}
+                placeholder="Search by name or code..."
+                className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 pr-20 text-sm outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
+              />
+              {hasSearchText ? (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setSearchText("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-md border border-white/20 px-2 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </div>
+            <p className="text-xs text-textSecondary">
+              Showing {filteredLabels.length} / {labels.length} labels
+              {hasSearchText ? ` · keyword: "${searchText.trim()}"` : ""}
+            </p>
           </div>
 
           <div className="space-y-2 text-sm">
