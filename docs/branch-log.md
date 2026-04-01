@@ -130,7 +130,7 @@
   - `frontend/src/test/domTestUtils.ts`
   - `frontend/src/app/router.integration.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增路由级 DOM 集成回归测试，覆盖 `Label -> Prompt -> Monitoring` 的侧边导航切换，并断言页面切换后关键 API 链路依次触发；同时在测试工具中新增 `findLinkByText` 以支持导航点击断言。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -139,7 +139,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：单独执行 `vitest run src/app/router.integration.dom.test.ts` 通过
 - **风险说明：** 当前集成测试以 mock API 为主，尚未覆盖真实后端联调与网络异常恢复路径。
-- **下一步：** 发起 PR 评审并合并；后续补充接口异常场景与重试路径的路由级回归。
+- **下一步：** 后续补充接口异常场景与重试路径的路由级回归。
 
 ---
 
