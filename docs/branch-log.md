@@ -173,7 +173,7 @@
   - `backend/app/api/v1/jobs.py`
   - `docs/TODO.md`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** `run_pipeline_mock` 已替换为后台分阶段执行服务（按阶段推进、产出统计与失败明细）；`trigger`、`retry_run`、`retry_single_failure` 全部接入新执行服务，并对活跃执行中的 run 跳过旧自动推进逻辑，避免状态互相覆盖。
 - **验证情况：**
   - lint：不适用（后端 Python）
@@ -182,7 +182,7 @@
   - build：`python -m compileall app` 通过
   - 手工验证：函数级冒烟通过（trigger 后 run 可自动完成；single failure retry 可自动完成）
 - **风险说明：** 执行服务改为后台线程后，需要注意与既有运行态自动推进逻辑的并发一致性。
-- **下一步：** 发起 PR，并在下一轮补充 pipeline 执行服务的后端自动化测试。
+- **下一步：** 在下一轮补充 pipeline 执行服务的后端自动化测试，并观察并发场景下的运行稳定性。
 
 ---
 
