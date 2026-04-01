@@ -2,7 +2,8 @@ param(
   [string]$BackendBase = "http://127.0.0.1:8000",
   [string]$FrontendBase = "http://127.0.0.1:5173",
   [switch]$SkipAlertFlow,
-  [int]$TimeoutSec = 8
+  [int]$TimeoutSec = 8,
+  [int]$MaxWaitSec = 30
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,16 +28,37 @@ function Post-Json {
   return Invoke-RestMethod -Method Post -Uri $Url -TimeoutSec $TimeoutSec
 }
 
+function Wait-HttpOk {
+  param(
+    [string]$Url,
+    [string]$Name
+  )
+  $deadline = (Get-Date).AddSeconds($MaxWaitSec)
+  while ((Get-Date) -lt $deadline) {
+    try {
+      $resp = Invoke-WebRequest -Method Get -Uri $Url -TimeoutSec $TimeoutSec -UseBasicParsing
+      if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400) {
+        return $resp
+      }
+    } catch {
+      Start-Sleep -Milliseconds 800
+      continue
+    }
+    Start-Sleep -Milliseconds 800
+  }
+  throw "$Name is not reachable within $MaxWaitSec seconds: $Url"
+}
+
 Write-Host "== MVP Smoke Check =="
 Write-Host "Frontend: $FrontendBase"
 Write-Host "Backend : $BackendBase"
 Write-Host ""
 
 try {
-  $frontendResp = Invoke-WebRequest -Method Get -Uri $FrontendBase -TimeoutSec $TimeoutSec -UseBasicParsing
-  Assert-Condition ($frontendResp.StatusCode -ge 200 -and $frontendResp.StatusCode -lt 400) "Frontend is not reachable"
+  $frontendResp = Wait-HttpOk -Url $FrontendBase -Name "Frontend"
   Write-Host ("[OK] Frontend reachable: {0}" -f $frontendResp.StatusCode)
 
+  [void](Wait-HttpOk -Url "$BackendBase/health" -Name "Backend health endpoint")
   $health = Get-Json -Url "$BackendBase/health"
   Assert-Condition ($health.status -eq "ok") "Backend health check failed"
   Write-Host "[OK] Backend /health status=ok"
