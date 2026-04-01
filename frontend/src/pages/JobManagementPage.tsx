@@ -84,6 +84,42 @@ function buildFallbackDetail(failure: RunFailure, stages: JobStage[]): RunFailur
   };
 }
 
+function isObjectLike(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function toPayloadRecord(value: unknown): Record<string, unknown> {
+  if (isObjectLike(value)) return value;
+  if (Array.isArray(value)) return { $array: value };
+  if (value === undefined) return {};
+  return { $value: value };
+}
+
+function stringifyDiffValue(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function buildTopLevelDiffRows(inputPayload: unknown, outputPayload: unknown) {
+  const input = toPayloadRecord(inputPayload);
+  const output = toPayloadRecord(outputPayload);
+  const keys = Array.from(new Set([...Object.keys(input), ...Object.keys(output)])).sort();
+  return keys.map((key) => {
+    const inputText = stringifyDiffValue(input[key]);
+    const outputText = stringifyDiffValue(output[key]);
+    return {
+      key,
+      inputText,
+      outputText,
+      changed: inputText !== outputText
+    };
+  });
+}
+
 const runFilters = [
   { key: "all", label: "All" },
   { key: "running", label: "Running" },
@@ -656,11 +692,63 @@ export function JobManagementPage() {
               <div className="rounded-lg border border-white/10 p-2">
                 <p className="mb-1 text-textSecondary">Node Timeline</p>
                 <div className="space-y-2">
-                  {selectedFailure.stage_timeline.map((stage) => (
-                    <div key={stage.stage_name} className="rounded border border-white/10 p-2">
-                      <p>{stage.stage_name} | {stage.status} | {stage.duration_ms}ms</p>
-                    </div>
-                  ))}
+                  {selectedFailure.stage_timeline.map((stage) => {
+                    const diffRows = buildTopLevelDiffRows(stage.input_payload, stage.output_payload);
+                    const changedCount = diffRows.filter((row) => row.changed).length;
+                    return (
+                      <details
+                        key={stage.stage_name}
+                        open={stage.stage_name === selectedFailure.node}
+                        className="rounded border border-white/10 bg-white/[0.02] p-2"
+                      >
+                        <summary className="flex cursor-pointer items-center justify-between gap-2 text-[11px]">
+                          <span className="font-medium text-indigo-100">{stage.stage_name}</span>
+                          <span className={statusClass(stage.status)}>{stage.status}</span>
+                          <span className="text-textSecondary">{stage.duration_ms}ms</span>
+                          <span
+                            className={[
+                              "rounded-full border px-2 py-0.5",
+                              changedCount > 0
+                                ? "border-amber-400/40 bg-amber-500/10 text-amber-200"
+                                : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
+                            ].join(" ")}
+                          >
+                            {changedCount > 0 ? `${changedCount} changed` : "no change"}
+                          </span>
+                        </summary>
+
+                        <div className="mt-2 grid gap-2 md:grid-cols-2">
+                          <div className="rounded border border-white/10 p-2">
+                            <p className="mb-1 text-[11px] text-textSecondary">Input</p>
+                            <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(stage.input_payload ?? {}, null, 2)}</pre>
+                          </div>
+                          <div className="rounded border border-white/10 p-2">
+                            <p className="mb-1 text-[11px] text-textSecondary">Output</p>
+                            <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(stage.output_payload ?? {}, null, 2)}</pre>
+                          </div>
+                        </div>
+
+                        <div className="mt-2 rounded border border-white/10 p-2">
+                          <p className="mb-1 text-[11px] text-textSecondary">Top-level diff</p>
+                          <div className="space-y-1">
+                            {diffRows.map((row) => (
+                              <div
+                                key={`${stage.stage_name}-${row.key}`}
+                                className={[
+                                  "grid grid-cols-[1fr_1fr_1fr] gap-2 rounded px-2 py-1 text-[11px]",
+                                  row.changed ? "bg-amber-500/10 text-amber-100" : "bg-white/[0.02] text-textSecondary"
+                                ].join(" ")}
+                              >
+                                <span className="truncate font-medium">{row.key}</span>
+                                <span className="truncate">{row.inputText || "(empty)"}</span>
+                                <span className="truncate">{row.outputText || "(empty)"}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </details>
+                    );
+                  })}
                 </div>
               </div>
               <div className="rounded-lg border border-white/10 p-2">
