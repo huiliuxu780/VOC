@@ -83,6 +83,34 @@
 
 ---
 
+## feature/pipeline-designer-persistence
+
+- **用途：** 完成 Pipeline Designer 端到端流程，支持按 job 持久化保存/加载 pipeline 配置
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/PipelineDesignerPage.tsx`、`frontend/src/store/pipelineStore.ts`、后端 `/api/v1/jobs`
+- **基于分支：** main
+- **主要改动文件：**
+  - `backend/app/api/v1/jobs.py`
+  - `backend/app/schemas/job.py`
+  - `backend/app/schemas/__init__.py`
+  - `frontend/src/pages/PipelineDesignerPage.tsx`
+  - `frontend/src/store/pipelineStore.ts`
+  - `frontend/src/lib/api.ts`
+  - `docs/TODO.md`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 新增 job 级 pipeline 配置 GET/PUT API 与配置归一化逻辑；前端 Pipeline 页面接入按 job 读取、编辑、保存与重载；store 从本地 seed-only 升级为可被后端配置驱动。
+- **验证情况：**
+  - lint：未执行（仓库当前未配置前端 lint 脚本）
+  - tests：未执行（仓库当前无对应自动化测试用例）
+  - type-check：`npm run build` 已包含 `tsc -b`，通过
+  - build：前端 `npm run build` 通过；后端 `python -m compileall app` 通过
+  - 手工验证：函数级冒烟通过（`get_job_pipeline`/`update_job_pipeline` 能保存并读回配置）
+- **风险说明：** 需要确保现有 pipeline 本地交互不回归，并兼容历史 job 的空配置。
+- **下一步：** 发起 PR，并在下一轮补充 pipeline API 与页面自动化测试。
+
+---
+
 ## feature/tag-hierarchy-page
 
 - **用途：** 搭建 VOC 管理后台的标签层级管理页面

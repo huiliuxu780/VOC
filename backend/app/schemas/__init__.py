@@ -1,5 +1,12 @@
 ﻿from app.schemas.datasource import DataSourceCreate, DataSourceOut, MappingPreviewRequest
-from app.schemas.job import JobConfigIn, JobConfigOut, TriggerResponse
+from app.schemas.job import (
+    JobConfigIn,
+    JobConfigOut,
+    JobPipelineConfigOut,
+    JobPipelineConfigUpdate,
+    PipelineNodeConfig,
+    TriggerResponse,
+)
 from app.schemas.label import LabelNodeIn, LabelNodeOut
 from app.schemas.monitoring import DashboardMetrics
 from app.schemas.prompt import PromptConfigIn, PromptConfigOut
@@ -14,6 +21,9 @@ __all__ = [
     "PromptConfigOut",
     "JobConfigIn",
     "JobConfigOut",
+    "PipelineNodeConfig",
+    "JobPipelineConfigOut",
+    "JobPipelineConfigUpdate",
     "TriggerResponse",
     "DashboardMetrics",
 ]

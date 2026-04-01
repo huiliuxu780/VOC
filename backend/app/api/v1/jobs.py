@@ -8,12 +8,25 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.config import DataSourceConfig, JobConfig
 from app.models.runtime import JobRun, JobRunStage, RunFailureDetail
-from app.schemas.job import JobConfigIn, JobConfigOut, TriggerResponse
+from app.schemas.job import (
+    JobConfigIn,
+    JobConfigOut,
+    JobPipelineConfigOut,
+    JobPipelineConfigUpdate,
+    PipelineNodeConfig,
+    TriggerResponse,
+)
 from app.services.pipeline_runner import run_pipeline_mock
 
 router = APIRouter()
 
 DEFAULT_STAGES = ["pre_filter", "relevance_analysis", "label_classify", "sentiment_analysis"]
+DEFAULT_PIPELINE_NODES: list[dict] = [
+    {"key": "pre_filter", "enabled": True, "model": "qwen-max-v1", "prompt_version": "v1.2"},
+    {"key": "relevance_analysis", "enabled": True, "model": "deepseek-v3", "prompt_version": "v2.0"},
+    {"key": "label_classify", "enabled": True, "model": "gpt-4.1-mini", "prompt_version": "v3.1"},
+    {"key": "sentiment_analysis", "enabled": True, "model": "gpt-4.1-mini", "prompt_version": "v1.8"},
+]
 
 _seed_jobs: list[dict] = [
     {
@@ -24,7 +37,6 @@ _seed_jobs: list[dict] = [
         "schedule_expr": "manual",
         "enabled": True,
         "output_type": "table",
-        "pipeline_config": {},
     },
     {
         "name": "Kafka Stream Consumer",
@@ -34,7 +46,6 @@ _seed_jobs: list[dict] = [
         "schedule_expr": "*/5 * * * *",
         "enabled": True,
         "output_type": "table",
-        "pipeline_config": {},
     },
 ]
 
@@ -167,13 +178,70 @@ def _to_job_out(item: JobConfig) -> JobConfigOut:
     )
 
 
+def _default_pipeline_nodes() -> list[dict]:
+    return [dict(item) for item in DEFAULT_PIPELINE_NODES]
+
+
+def _normalize_pipeline_nodes(raw_config: dict | None) -> list[dict]:
+    raw_nodes = raw_config.get("nodes") if isinstance(raw_config, dict) else None
+    raw_list = raw_nodes if isinstance(raw_nodes, list) else []
+    default_by_key = {item["key"]: item for item in DEFAULT_PIPELINE_NODES}
+    provided_by_key: dict[str, dict] = {}
+    extras: list[dict] = []
+
+    for node in raw_list:
+        if not isinstance(node, dict):
+            continue
+        key_raw = node.get("key")
+        if not isinstance(key_raw, str):
+            continue
+        key = key_raw.strip()
+        if not key:
+            continue
+
+        default_node = default_by_key.get(key, {})
+        model = str(node.get("model", default_node.get("model", "gpt-4.1-mini"))).strip()
+        if not model:
+            model = str(default_node.get("model", "gpt-4.1-mini"))
+
+        prompt_value = node.get("prompt_version", node.get("promptVersion", default_node.get("prompt_version", "v1")))
+        prompt_version = str(prompt_value).strip()
+        if not prompt_version:
+            prompt_version = str(default_node.get("prompt_version", "v1"))
+
+        normalized = {
+            "key": key,
+            "enabled": bool(node.get("enabled", default_node.get("enabled", True))),
+            "model": model,
+            "prompt_version": prompt_version,
+        }
+        if key in default_by_key:
+            provided_by_key[key] = normalized
+        else:
+            extras.append(normalized)
+
+    ordered_nodes: list[dict] = []
+    for default_node in DEFAULT_PIPELINE_NODES:
+        ordered_nodes.append(provided_by_key.get(default_node["key"], dict(default_node)))
+    ordered_nodes.extend(extras)
+    return ordered_nodes
+
+
+def _get_job_or_404(db: Session, job_id: int) -> JobConfig:
+    row = db.scalar(select(JobConfig).where(JobConfig.id == job_id))
+    if row is None:
+        raise HTTPException(status_code=404, detail="job not found")
+    return row
+
+
 def _seed_jobs_if_empty(db: Session) -> None:
     count = int(db.scalar(select(func.count()).select_from(JobConfig)) or 0)
     if count > 0:
         return
 
     for item in _seed_jobs:
-        db.add(JobConfig(**item))
+        payload = {**item, "pipeline_config": {"nodes": _default_pipeline_nodes()}}
+        db.add(JobConfig(**payload))
     db.commit()
 
 
@@ -406,19 +474,42 @@ def create_job(payload: JobConfigIn, db: Session = Depends(get_db)) -> JobConfig
     if datasource is None:
         raise HTTPException(status_code=404, detail="datasource not found")
 
-    row = JobConfig(enabled=True, pipeline_config={}, **payload.model_dump())
+    row = JobConfig(enabled=True, pipeline_config={"nodes": _default_pipeline_nodes()}, **payload.model_dump())
     db.add(row)
     db.commit()
     db.refresh(row)
     return _to_job_out(row)
 
 
+@router.get("/{job_id}/pipeline", response_model=JobPipelineConfigOut)
+def get_job_pipeline(job_id: int, db: Session = Depends(get_db)) -> JobPipelineConfigOut:
+    _refresh_jobs(db)
+    row = _get_job_or_404(db, job_id)
+    normalized_nodes = _normalize_pipeline_nodes(row.pipeline_config if isinstance(row.pipeline_config, dict) else None)
+    current_nodes = row.pipeline_config.get("nodes") if isinstance(row.pipeline_config, dict) else None
+    if current_nodes != normalized_nodes:
+        row.pipeline_config = {"nodes": normalized_nodes}
+        db.commit()
+        db.refresh(row)
+    return JobPipelineConfigOut(job_id=row.id, nodes=[PipelineNodeConfig(**node) for node in normalized_nodes])
+
+
+@router.put("/{job_id}/pipeline", response_model=JobPipelineConfigOut)
+def update_job_pipeline(
+    job_id: int, payload: JobPipelineConfigUpdate, db: Session = Depends(get_db)
+) -> JobPipelineConfigOut:
+    _refresh_jobs(db)
+    row = _get_job_or_404(db, job_id)
+    normalized_nodes = _normalize_pipeline_nodes({"nodes": [item.model_dump() for item in payload.nodes]})
+    row.pipeline_config = {"nodes": normalized_nodes}
+    db.commit()
+    return JobPipelineConfigOut(job_id=row.id, nodes=[PipelineNodeConfig(**node) for node in normalized_nodes])
+
+
 @router.post("/{job_id}/trigger", response_model=TriggerResponse)
 def trigger_job(job_id: int, db: Session = Depends(get_db)) -> TriggerResponse:
     _refresh_runtime(db)
-    job = db.scalar(select(JobConfig).where(JobConfig.id == job_id))
-    if job is None:
-        raise HTTPException(status_code=404, detail="job not found")
+    _get_job_or_404(db, job_id)
 
     run_id = f"RUN-{uuid4().hex[:10]}"
     now = datetime.utcnow()
@@ -445,9 +536,7 @@ def trigger_job(job_id: int, db: Session = Depends(get_db)) -> TriggerResponse:
 @router.get("/{job_id}/runs")
 def list_job_runs(job_id: int, status: str | None = Query(default=None), db: Session = Depends(get_db)) -> list[dict]:
     _refresh_runtime(db)
-    job = db.scalar(select(JobConfig.id).where(JobConfig.id == job_id))
-    if job is None:
-        raise HTTPException(status_code=404, detail="job not found")
+    _get_job_or_404(db, job_id)
 
     stmt = select(JobRun).where(JobRun.job_id == job_id)
     if status and status != "all":
