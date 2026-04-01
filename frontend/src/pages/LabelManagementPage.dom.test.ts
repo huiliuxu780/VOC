@@ -238,16 +238,27 @@ describe("LabelManagementPage DOM interactions", () => {
 
     await waitFor(() => {
       expect(container.textContent).toContain("Selected label #2 from search results");
+      const activeLabel = container.querySelector("button[data-label-id='2']");
+      const inactiveLabel = container.querySelector("button[data-label-id='3']");
+      expect(activeLabel?.getAttribute("data-active-match")).toBe("true");
+      expect(inactiveLabel?.getAttribute("data-active-match")).toBe("false");
     });
 
     await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
     await waitFor(() => {
       expect(container.textContent).toContain("Selected label #3 from search results");
+      const activeLabel = container.querySelector("button[data-label-id='3']");
+      const inactiveLabel = container.querySelector("button[data-label-id='2']");
+      expect(activeLabel?.getAttribute("data-active-match")).toBe("true");
+      expect(inactiveLabel?.getAttribute("data-active-match")).toBe("false");
     });
 
     await keyDownElement(searchInput as HTMLInputElement, "ArrowUp");
     await waitFor(() => {
       expect(container.textContent).toContain("Selected label #2 from search results");
+      const activeLabel = container.querySelector("button[data-label-id='2']");
+      expect(activeLabel?.getAttribute("data-active-match")).toBe("true");
+      expect(container.textContent).toContain("active");
     });
 
     await unmount();

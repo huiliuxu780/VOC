@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+﻿import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
@@ -286,33 +286,49 @@ export function LabelManagementPage() {
             </div>
             <p className="text-xs text-textSecondary">
               Showing {filteredLabels.length} / {labels.length} labels
-              {hasSearchText ? ` · keyword: "${searchText.trim()}"` : ""}
+              {hasSearchText ? ` | keyword: "${searchText.trim()}"` : ""}
             </p>
           </div>
 
           <div className="space-y-2 text-sm">
             {loading ? <p className="text-textSecondary">Loading labels...</p> : null}
             {!loading && filteredLabels.length === 0 ? <p className="text-textSecondary">No labels found.</p> : null}
-            {filteredLabels.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setSelectedLabelId(item.id)}
-                className={[
-                  "w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
-                  selectedLabelId === item.id
-                    ? "border-indigo-400/45 bg-indigo-500/15"
-                    : "border-white/10 bg-white/[0.02] hover:border-white/25"
-                ].join(" ")}
-              >
-                <div className="mb-1 flex items-center justify-between gap-2">
-                  <p className="font-medium text-indigo-100">{renderHighlightedText(item.name, deferredSearchText, `name-${item.id}`)}</p>
-                  <span className={["rounded-full border px-2 py-0.5 text-[11px]", levelClass(item.level)].join(" ")}>{`L${item.level}`}</span>
-                </div>
-                <p className="text-xs text-textSecondary">
-                  code: {renderHighlightedText(item.code, deferredSearchText, `code-${item.id}`)} | children: {childCountMap[item.id] ?? 0}
-                </p>
-              </button>
-            ))}
+            {filteredLabels.map((item) => {
+              const isSelected = selectedLabelId === item.id;
+              const isActiveMatch = hasSearchText && isSelected && filteredLabels.length > 0;
+              return (
+                <button
+                  key={item.id}
+                  data-label-id={item.id}
+                  data-active-match={isActiveMatch ? "true" : "false"}
+                  aria-current={isActiveMatch ? "true" : undefined}
+                  onClick={() => setSelectedLabelId(item.id)}
+                  className={[
+                    "w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
+                    isActiveMatch
+                      ? "border-emerald-300/55 bg-emerald-500/15 ring-1 ring-emerald-300/35"
+                      : isSelected
+                        ? "border-indigo-400/45 bg-indigo-500/15"
+                        : "border-white/10 bg-white/[0.02] hover:border-white/25"
+                  ].join(" ")}
+                >
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="font-medium text-indigo-100">{renderHighlightedText(item.name, deferredSearchText, `name-${item.id}`)}</p>
+                    <div className="flex items-center gap-1.5">
+                      {isActiveMatch ? (
+                        <span className="rounded-full border border-emerald-300/45 bg-emerald-500/20 px-2 py-0.5 text-[11px] text-emerald-100">
+                          active
+                        </span>
+                      ) : null}
+                      <span className={["rounded-full border px-2 py-0.5 text-[11px]", levelClass(item.level)].join(" ")}>{`L${item.level}`}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-textSecondary">
+                    code: {renderHighlightedText(item.code, deferredSearchText, `code-${item.id}`)} | children: {childCountMap[item.id] ?? 0}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </Panel>
 
@@ -433,3 +449,4 @@ export function LabelManagementPage() {
     </div>
   );
 }
+
