@@ -1,0 +1,39 @@
+# Project TODO
+
+Last updated: 2026-04-01
+
+## P0 - Core Delivery
+
+- [ ] Persist config modules to database instead of in-memory arrays.
+  Scope: `datasource`, `labels`, `prompts`, `jobs` config CRUD.
+  Current state: still using in-memory collections in API modules.
+- [ ] Complete end-to-end Prompt management flow.
+  Scope: backend CRUD + publish/test + frontend integration.
+  Current state: Prompt page is mostly local form state.
+- [ ] Complete end-to-end Label management flow.
+  Scope: label tree CRUD + frontend tree/detail interaction.
+  Current state: static seed list on frontend.
+- [ ] Complete end-to-end Pipeline designer flow.
+  Scope: save/load pipeline config per job + frontend integration.
+  Current state: local zustand-only state.
+
+## P1 - Platform Capability
+
+- [ ] Implement missing APIs defined in design doc.
+  Candidates: `/monitoring/queues`, `/monitoring/apis`, `/settings/models`.
+- [ ] Replace pipeline mock with staged execution service.
+  Current state: `run_pipeline_mock` placeholder.
+- [ ] Add backend unit/integration tests for critical APIs.
+- [ ] Add frontend component/page tests for key workflows.
+
+## P2 - Engineering Quality
+
+- [ ] Fix encoding issues in design doc and keep one clean Chinese version.
+- [ ] Add changelog/release notes hygiene (template + update discipline).
+- [ ] Add API contract snapshot checks to CI (schema drift guard).
+
+## Ongoing Rules
+
+- Keep this file as the single source of truth for pending work.
+- Update statuses when a task starts/completes.
+- Add date and owner when a task moves to in-progress.

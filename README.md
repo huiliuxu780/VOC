@@ -59,6 +59,7 @@ Prepare/create release tag:
 - `Release Check`: runs on version tags (`v*`) or manually via GitHub Actions
 
 Release runbook: `docs/release-runbook.md`
+Project TODO board: `docs/TODO.md`
 
 Default URLs:
 
