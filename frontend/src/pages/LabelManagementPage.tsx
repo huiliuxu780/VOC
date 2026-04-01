@@ -92,6 +92,11 @@ export function LabelManagementPage() {
   const watchedParentId = watch("parent_id");
   const parentSelectValue = watchedParentId === null ? "null" : String(watchedParentId);
 
+  function selectLabelFromSearchResults(label: LabelRecord) {
+    setSelectedLabelId(label.id);
+    setNotice(`Selected label #${label.id} from search results`);
+  }
+
   async function loadLabels() {
     try {
       const rows = await apiGet<LabelRecord[]>("/labels/tree");
@@ -237,6 +242,7 @@ export function LabelManagementPage() {
                 aria-label="Search labels"
                 onChange={(event) => setSearchText(event.target.value)}
                 onKeyDown={(event) => {
+                  if (event.nativeEvent.isComposing) return;
                   if (event.key === "Escape" && hasSearchText) {
                     event.preventDefault();
                     setSearchText("");
@@ -244,9 +250,24 @@ export function LabelManagementPage() {
                   }
                   if (event.key === "Enter" && liveFilteredLabels.length > 0) {
                     event.preventDefault();
-                    const firstMatch = liveFilteredLabels[0];
-                    setSelectedLabelId(firstMatch.id);
-                    setNotice(`Selected label #${firstMatch.id} from search results`);
+                    selectLabelFromSearchResults(liveFilteredLabels[0]);
+                    return;
+                  }
+                  if (event.key === "ArrowDown" && liveFilteredLabels.length > 0) {
+                    event.preventDefault();
+                    const currentIndex = liveFilteredLabels.findIndex((item) => item.id === selectedLabelId);
+                    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % liveFilteredLabels.length;
+                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex]);
+                    return;
+                  }
+                  if (event.key === "ArrowUp" && liveFilteredLabels.length > 0) {
+                    event.preventDefault();
+                    const currentIndex = liveFilteredLabels.findIndex((item) => item.id === selectedLabelId);
+                    const nextIndex =
+                      currentIndex === -1
+                        ? liveFilteredLabels.length - 1
+                        : (currentIndex - 1 + liveFilteredLabels.length) % liveFilteredLabels.length;
+                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex]);
                   }
                 }}
                 placeholder="Search by name or code..."

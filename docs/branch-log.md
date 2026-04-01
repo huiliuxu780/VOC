@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-search-arrow-navigation
+
+- **用途：** 增强标签搜索键盘导航，支持上下方向键在匹配结果中快速切换
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在搜索输入框新增 `ArrowDown / ArrowUp` 键盘导航，支持在匹配列表中循环切换选中项；与已有 Enter 快捷选中联动，方向键切换后可直接确认当前目标。补充 DOM 回归测试覆盖上下键循环行为。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 6 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 键盘导航若循环逻辑边界处理不当，可能导致选中跳转异常或与现有 Enter 行为冲突。
+- **下一步：** 发起 PR 评审并合并；后续可补充“方向键导航时的视觉活动态提示（active row）”。
+
+---
+
 ## feature/label-search-enter-select
 
 - **用途：** 增强标签搜索键盘效率，支持 Enter 快速选中首条匹配项

@@ -41,6 +41,18 @@ const childLabel: LabelRecord = {
   default_prompt_version: "v2"
 };
 
+const secondInstallLabel: LabelRecord = {
+  id: 3,
+  category_id: 1,
+  parent_id: 1,
+  level: 2,
+  name: "Install Retry",
+  code: "L2_INSTALL_RETRY",
+  is_leaf: true,
+  llm_enabled: true,
+  default_prompt_version: "v2"
+};
+
 describe("LabelManagementPage DOM interactions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -201,6 +213,39 @@ describe("LabelManagementPage DOM interactions", () => {
     await changeInputValue(searchInput as HTMLInputElement, "install");
     await keyDownElement(searchInput as HTMLInputElement, "Enter");
 
+    await waitFor(() => {
+      expect(container.textContent).toContain("Selected label #2 from search results");
+    });
+
+    await unmount();
+  });
+
+  it("cycles filtered labels with ArrowDown and ArrowUp", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);
+
+    const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Loaded 3 labels");
+    });
+
+    const searchInput = container.querySelector("input[aria-label='Search labels']");
+    expect(searchInput).not.toBeNull();
+
+    await changeInputValue(searchInput as HTMLInputElement, "install");
+    await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Selected label #2 from search results");
+    });
+
+    await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+    await waitFor(() => {
+      expect(container.textContent).toContain("Selected label #3 from search results");
+    });
+
+    await keyDownElement(searchInput as HTMLInputElement, "ArrowUp");
     await waitFor(() => {
       expect(container.textContent).toContain("Selected label #2 from search results");
     });
