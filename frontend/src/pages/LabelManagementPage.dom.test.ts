@@ -197,6 +197,35 @@ describe("LabelManagementPage DOM interactions", () => {
     await unmount();
   });
 
+  it("exposes keyboard hint copy and combobox/listbox aria links", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel]);
+
+    const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Loaded 2 labels");
+    });
+
+    const searchInput = container.querySelector("input[aria-label='Search labels']");
+    expect(searchInput).not.toBeNull();
+    expect(searchInput?.getAttribute("role")).toBe("combobox");
+    expect(searchInput?.getAttribute("aria-controls")).toBe("label-search-results");
+    expect(searchInput?.getAttribute("aria-describedby")).toBe("label-search-help label-search-status");
+
+    const helpText = container.querySelector("#label-search-help");
+    expect(helpText?.textContent).toContain("Arrow Up/Down to navigate results");
+    const statusText = container.querySelector("#label-search-status");
+    expect(statusText?.getAttribute("role")).toBe("status");
+
+    const resultsList = container.querySelector("#label-search-results");
+    expect(resultsList?.getAttribute("role")).toBe("listbox");
+    const rootOption = container.querySelector("#label-search-option-1");
+    expect(rootOption?.getAttribute("role")).toBe("option");
+
+    await unmount();
+  });
+
   it("selects first filtered label when pressing Enter in search input", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockResolvedValue([rootLabel, childLabel]);
@@ -215,6 +244,36 @@ describe("LabelManagementPage DOM interactions", () => {
 
     await waitFor(() => {
       expect(container.textContent).toContain("Selected label #2 from search results");
+    });
+
+    await unmount();
+  });
+
+  it("updates aria-activedescendant while navigating filtered results", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);
+
+    const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+    await waitFor(() => {
+      expect(container.textContent).toContain("Loaded 3 labels");
+    });
+
+    const searchInput = container.querySelector("input[aria-label='Search labels']");
+    expect(searchInput).not.toBeNull();
+
+    await changeInputValue(searchInput as HTMLInputElement, "install");
+    await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+
+    await waitFor(() => {
+      expect(searchInput?.getAttribute("aria-activedescendant")).toBe("label-search-option-2");
+      expect(container.querySelector("#label-search-option-2")?.getAttribute("aria-selected")).toBe("true");
+    });
+
+    await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+    await waitFor(() => {
+      expect(searchInput?.getAttribute("aria-activedescendant")).toBe("label-search-option-3");
+      expect(container.querySelector("#label-search-option-3")?.getAttribute("aria-selected")).toBe("true");
     });
 
     await unmount();

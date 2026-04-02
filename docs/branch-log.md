@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-search-a11y-hints
+
+- **用途：** 优化标签搜索区域的键盘可用性提示与 ARIA 语义，降低键盘用户的学习成本
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx` 搜索输入与结果列表
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已补充搜索区可见键盘提示文案，并完善输入框与结果列表 ARIA 关联：`role=combobox`、`aria-controls`、`aria-describedby`、`aria-activedescendant`，以及结果区 `role=listbox` / 选项 `role=option` + `aria-selected`。同步新增 DOM 回归用例校验提示文案与语义关联随键盘导航更新。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 11 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 若 ARIA 关联 id 不稳定，可能引发可访问性语义失效或测试脆弱。
+- **下一步：** 提交并发起评审，确认后可合并到 `main` 进入下一轮重构迭代。
+
+---
+
 ## chore/release-stabilization-v0-2-0
 
 - **用途：** 发布前收口：清理遗留分支记录状态、执行发布检查并打版本标签

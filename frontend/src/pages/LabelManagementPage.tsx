@@ -90,6 +90,13 @@ export function LabelManagementPage() {
   const hasSearchText = searchText.trim().length > 0;
   const labelButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
   const { setSelectionSource, getSelectionSource, clearSelectionSource } = useSelectionSource();
+  const searchHelpId = "label-search-help";
+  const searchStatusId = "label-search-status";
+  const searchResultsId = "label-search-results";
+  const activeSearchResultId =
+    hasSearchText && selectedLabelId !== null && filteredLabels.some((item) => item.id === selectedLabelId)
+      ? `label-search-option-${selectedLabelId}`
+      : undefined;
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
   const watchedParentId = watch("parent_id");
@@ -260,6 +267,12 @@ export function LabelManagementPage() {
               <input
                 value={searchText}
                 aria-label="Search labels"
+                role="combobox"
+                aria-controls={searchResultsId}
+                aria-autocomplete="list"
+                aria-expanded={filteredLabels.length > 0}
+                aria-describedby={`${searchHelpId} ${searchStatusId}`}
+                aria-activedescendant={activeSearchResultId}
                 onChange={(event) => {
                   clearSelectionSource();
                   setSearchText(event.target.value);
@@ -311,13 +324,16 @@ export function LabelManagementPage() {
                 </button>
               ) : null}
             </div>
-            <p className="text-xs text-textSecondary">
+            <p id={searchHelpId} className="text-xs text-textSecondary">
+              Keyboard: Arrow Up/Down to navigate results, Enter to select, Escape to clear.
+            </p>
+            <p id={searchStatusId} role="status" aria-live="polite" aria-atomic="true" className="text-xs text-textSecondary">
               Showing {filteredLabels.length} / {labels.length} labels
               {hasSearchText ? ` | keyword: "${searchText.trim()}"` : ""}
             </p>
           </div>
 
-          <div className="space-y-2 text-sm">
+          <div id={searchResultsId} role="listbox" aria-label="Filtered labels" className="space-y-2 text-sm">
             {loading ? <p className="text-textSecondary">Loading labels...</p> : null}
             {!loading && filteredLabels.length === 0 ? <p className="text-textSecondary">No labels found.</p> : null}
             {filteredLabels.map((item) => {
@@ -326,8 +342,11 @@ export function LabelManagementPage() {
               return (
                 <button
                   key={item.id}
+                  id={`label-search-option-${item.id}`}
+                  role="option"
                   data-label-id={item.id}
                   data-active-match={isActiveMatch ? "true" : "false"}
+                  aria-selected={isActiveMatch}
                   aria-current={isActiveMatch ? "true" : undefined}
                   ref={(node) => {
                     labelButtonRefs.current[item.id] = node;
