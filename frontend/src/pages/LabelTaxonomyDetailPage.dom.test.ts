@@ -126,6 +126,36 @@ const configVersions: LabelNodeConfigVersionRecord[] = [
   }
 ];
 
+const configVersionsExtended: LabelNodeConfigVersionRecord[] = [
+  {
+    id: "cfgv3",
+    labelNodeId: "node-install-delay",
+    configId: "cfg-current",
+    configVersion: "v1.2",
+    status: "published",
+    snapshot: { version: "v1.2", temperature: 0.05 },
+    createdAt: "2026-04-02T11:00:00Z"
+  },
+  {
+    id: "cfgv2",
+    labelNodeId: "node-install-delay",
+    configId: "cfg-current",
+    configVersion: "v1.1",
+    status: "published",
+    snapshot: { version: "v1.1", temperature: 0.1 },
+    createdAt: "2026-04-02T10:00:00Z"
+  },
+  {
+    id: "cfgv1",
+    labelNodeId: "node-install-delay",
+    configId: "cfg-current",
+    configVersion: "v1.0",
+    status: "draft",
+    snapshot: { version: "v1.0", temperature: 0.2 },
+    createdAt: "2026-04-01T10:00:00Z"
+  }
+];
+
 const diffResult: LabelNodeConfigVersionDiffRecord = {
   fromVersionId: "cfgv1",
   toVersionId: "cfgv2",
@@ -139,6 +169,18 @@ const diffResult: LabelNodeConfigVersionDiffRecord = {
       field: "temperature",
       fromValue: 0.2,
       toValue: 0.1
+    }
+  ]
+};
+
+const diffResultSwitchCompare: LabelNodeConfigVersionDiffRecord = {
+  fromVersionId: "cfgv1",
+  toVersionId: "cfgv2",
+  changes: [
+    {
+      field: "decisionRule",
+      fromValue: "old rule",
+      toValue: "new rule"
     }
   ]
 };
@@ -309,6 +351,132 @@ describe("LabelTaxonomyDetailPage DOM interactions", () => {
     await waitFor(() => {
       expect(apiGetMock).toHaveBeenCalledWith("/label-nodes/node-install-delay/test-records?offset=10&limit=10&hitLabel=UNMATCHED&q=timeout");
       expect(container.textContent).toContain("timeout second page");
+    });
+
+    await unmount();
+  });
+
+  it("shows empty state when current node has no config versions", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/label-taxonomies") return taxonomyRows;
+      if (path === "/label-taxonomies/tax-1") return taxonomyRows[0];
+      if (path === "/label-taxonomies/tax-1/versions") return versionRows;
+      if (path === "/label-taxonomies/tax-1/versions/ver-1") return versionRows[0];
+      if (path === "/label-taxonomies/tax-1/versions/ver-1/tree") return treeRows;
+      if (path === "/label-nodes/node-install-delay/config") return nodeConfig;
+      if (path === "/label-nodes/node-install-delay/examples") return [];
+      if (path === "/label-nodes/node-install-delay/config/versions") return [];
+      if (path === "/label-nodes/node-install-delay/test-records?offset=0&limit=10") {
+        return {
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 10,
+          hasMore: false
+        } satisfies LabelNodeTestRecordPage;
+      }
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createRouter();
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await clickElement(findButtonByText(container, "Versions"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("No config versions yet.");
+    });
+    expect(container.textContent).not.toContain("Compare Config Versions");
+    expect(apiGetMock.mock.calls.some(([path]) => String(path).includes("/config/versions/compare"))).toBe(false);
+
+    await unmount();
+  });
+
+  it("shows compare error feedback when version diff request fails", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/label-taxonomies") return taxonomyRows;
+      if (path === "/label-taxonomies/tax-1") return taxonomyRows[0];
+      if (path === "/label-taxonomies/tax-1/versions") return versionRows;
+      if (path === "/label-taxonomies/tax-1/versions/ver-1") return versionRows[0];
+      if (path === "/label-taxonomies/tax-1/versions/ver-1/tree") return treeRows;
+      if (path === "/label-nodes/node-install-delay/config") return nodeConfig;
+      if (path === "/label-nodes/node-install-delay/examples") return [];
+      if (path === "/label-nodes/node-install-delay/config/versions") return configVersions;
+      if (path === "/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv1&toVersionId=cfgv2") {
+        throw new Error("compare failed");
+      }
+      if (path === "/label-nodes/node-install-delay/test-records?offset=0&limit=10") {
+        return {
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 10,
+          hasMore: false
+        } satisfies LabelNodeTestRecordPage;
+      }
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createRouter();
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await clickElement(findButtonByText(container, "Versions"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("Failed to load version diff. Please retry.");
+    });
+
+    await unmount();
+  });
+
+  it("switches compare params and requests diff with the selected version pair", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/label-taxonomies") return taxonomyRows;
+      if (path === "/label-taxonomies/tax-1") return taxonomyRows[0];
+      if (path === "/label-taxonomies/tax-1/versions") return versionRows;
+      if (path === "/label-taxonomies/tax-1/versions/ver-1") return versionRows[0];
+      if (path === "/label-taxonomies/tax-1/versions/ver-1/tree") return treeRows;
+      if (path === "/label-nodes/node-install-delay/config") return nodeConfig;
+      if (path === "/label-nodes/node-install-delay/examples") return [];
+      if (path === "/label-nodes/node-install-delay/config/versions") return configVersionsExtended;
+      if (path === "/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv2&toVersionId=cfgv3") return diffResult;
+      if (path === "/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv1&toVersionId=cfgv2") return diffResultSwitchCompare;
+      if (path === "/label-nodes/node-install-delay/test-records?offset=0&limit=10") {
+        return {
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 10,
+          hasMore: false
+        } satisfies LabelNodeTestRecordPage;
+      }
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createRouter();
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await clickElement(findButtonByText(container, "Versions"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("Compare Config Versions");
+    });
+
+    const fromSelectTrigger = container.querySelector("button[aria-label='Compare from version']");
+    expect(fromSelectTrigger).not.toBeNull();
+    await clickElement(fromSelectTrigger as HTMLButtonElement);
+    await clickElement(findButtonByText(container, "v1.0 | draft"));
+
+    const toSelectTrigger = container.querySelector("button[aria-label='Compare to version']");
+    expect(toSelectTrigger).not.toBeNull();
+    await clickElement(toSelectTrigger as HTMLButtonElement);
+    await clickElement(findButtonByText(container, "v1.1 | published"));
+
+    await clickElement(findButtonByText(container, "Compare"));
+
+    await waitFor(() => {
+      expect(apiGetMock).toHaveBeenCalledWith("/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv1&toVersionId=cfgv2");
+      expect(container.textContent).toContain("decisionRule");
     });
 
     await unmount();

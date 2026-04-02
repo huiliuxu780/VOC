@@ -112,6 +112,10 @@ function diffValueToText(value: unknown): string {
   }
 }
 
+function hasInvalidCompareSelection(fromVersionId: string, toVersionId: string): boolean {
+  return Boolean(fromVersionId && toVersionId && fromVersionId === toVersionId);
+}
+
 export function LabelTaxonomyDetailPage() {
   const navigate = useNavigate();
   const { taxonomyId = "", versionId, nodeId } = useParams<{ taxonomyId: string; versionId: string; nodeId?: string }>();
@@ -157,6 +161,7 @@ export function LabelTaxonomyDetailPage() {
   const [compareToVersionId, setCompareToVersionId] = useState("");
   const [versionDiffLoading, setVersionDiffLoading] = useState(false);
   const [versionDiff, setVersionDiff] = useState<LabelNodeConfigVersionDiffRecord | null>(null);
+  const [versionDiffError, setVersionDiffError] = useState("");
 
   const resolvedVersionId = versionId ?? defaultVersionIdForTaxonomy(taxonomyId);
 
@@ -262,9 +267,11 @@ export function LabelTaxonomyDetailPage() {
   async function loadConfigVersionDiff(nodeId: string, fromVersionId: string, toVersionId: string) {
     if (!fromVersionId || !toVersionId || fromVersionId === toVersionId) {
       setVersionDiff(null);
+      setVersionDiffError("");
       return;
     }
     setVersionDiffLoading(true);
+    setVersionDiffError("");
     try {
       const query = new URLSearchParams({
         fromVersionId,
@@ -274,6 +281,7 @@ export function LabelTaxonomyDetailPage() {
       setVersionDiff(diff);
     } catch {
       setVersionDiff(null);
+      setVersionDiffError("Failed to load version diff. Please retry.");
     } finally {
       setVersionDiffLoading(false);
     }
@@ -285,6 +293,7 @@ export function LabelTaxonomyDetailPage() {
       setCompareFromVersionId("");
       setCompareToVersionId("");
       setVersionDiff(null);
+      setVersionDiffError("");
       return;
     }
     const nextToVersionId = rows[0].id;
@@ -304,6 +313,7 @@ export function LabelTaxonomyDetailPage() {
       setCompareFromVersionId("");
       setCompareToVersionId("");
       setVersionDiff(null);
+      setVersionDiffError("");
     } finally {
       setConfigVersionsLoading(false);
     }
@@ -341,6 +351,7 @@ export function LabelTaxonomyDetailPage() {
       setCompareFromVersionId("");
       setCompareToVersionId("");
       setVersionDiff(null);
+      setVersionDiffError("");
       setTestRecords([]);
       setTestRecordOffset(0);
       setTestRecordTotal(0);
@@ -391,6 +402,7 @@ export function LabelTaxonomyDetailPage() {
         setCompareFromVersionId("");
         setCompareToVersionId("");
         setVersionDiff(null);
+        setVersionDiffError("");
         setTestRecords([]);
         setTestRecordOffset(0);
         setTestRecordTotal(0);
@@ -584,7 +596,7 @@ export function LabelTaxonomyDetailPage() {
   }
 
   async function compareSelectedVersions() {
-    if (!selectedNodeId || !compareFromVersionId || !compareToVersionId) return;
+    if (!selectedNodeId) return;
     await loadConfigVersionDiff(selectedNodeId, compareFromVersionId, compareToVersionId);
   }
 
@@ -613,6 +625,8 @@ export function LabelTaxonomyDetailPage() {
     const nextOffset = testRecordOffset + TEST_RECORDS_PAGE_LIMIT;
     await loadTestRecords(selectedNodeId, { offset: nextOffset });
   }
+
+  const compareSelectionInvalid = hasInvalidCompareSelection(compareFromVersionId, compareToVersionId);
 
   return (
     <div className="space-y-6">
@@ -1088,6 +1102,7 @@ export function LabelTaxonomyDetailPage() {
                               <Select
                                 value={compareFromVersionId}
                                 onChange={setCompareFromVersionId}
+                                ariaLabel="Compare from version"
                                 options={configVersions.map((item) => ({
                                   value: item.id,
                                   label: `${item.configVersion} | ${item.status}`
@@ -1099,6 +1114,7 @@ export function LabelTaxonomyDetailPage() {
                               <Select
                                 value={compareToVersionId}
                                 onChange={setCompareToVersionId}
+                                ariaLabel="Compare to version"
                                 options={configVersions.map((item) => ({
                                   value: item.id,
                                   label: `${item.configVersion} | ${item.status}`
@@ -1108,7 +1124,7 @@ export function LabelTaxonomyDetailPage() {
                             <div className="flex items-end">
                               <button
                                 type="button"
-                                disabled={versionDiffLoading || !compareFromVersionId || !compareToVersionId}
+                                disabled={versionDiffLoading || !compareFromVersionId || !compareToVersionId || compareSelectionInvalid}
                                 onClick={() => void compareSelectedVersions()}
                                 className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
                               >
@@ -1117,6 +1133,10 @@ export function LabelTaxonomyDetailPage() {
                             </div>
                           </div>
                           {versionDiffLoading ? <p className="text-xs text-textSecondary">Loading version diff...</p> : null}
+                          {!versionDiffLoading && compareSelectionInvalid ? (
+                            <p className="text-xs text-amber-200">Please select two different versions to compare.</p>
+                          ) : null}
+                          {!versionDiffLoading && versionDiffError ? <p className="text-xs text-rose-200">{versionDiffError}</p> : null}
                           {!versionDiffLoading && versionDiff && versionDiff.changes.length === 0 ? (
                             <p className="text-xs text-textSecondary">No field differences found.</p>
                           ) : null}

@@ -69,6 +69,29 @@
 
 ---
 
+## refactor/taxonomy-detail-compare-states
+
+- **用途：** 以最小切片重构标签体系详情页 Testing/Versions 状态反馈，补齐异常态、空态与 compare 参数切换回归
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/LabelTaxonomyDetailPage.tsx`、`frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
+- **基于分支：** feature/taxonomy-node-config-testing
+- **主要改动文件：**
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成最小重构切片：为 Versions Compare 增加参数合法性判定与失败态提示，避免“无结果”与“请求失败”混淆；为 compare 下拉补 `aria-label` 提升可访问性与测试可定位性；DOM 回归扩展为 5 个场景，新增异常态、空态与 compare 参数切换覆盖。
+- **验证情况：**
+  - lint：不适用（仓库未设置前端 lint 门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 5 tests）；`cd frontend && npm run test` 通过（11 files, 38 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化回归为主）
+- **风险说明：** 若 compare 状态处理边界不清晰，可能导致“无差异”“请求失败”“参数非法”三类提示互相覆盖。
+- **下一步：** 基于该分支发起 PR；若通过评审，建议继续推进详情页分栏结构拆分（导航区/编辑区/调试区）并保持同级回归用例补齐。
+
+---
+
 ## feature/label-taxonomy-p0-shell
 
 - **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）
