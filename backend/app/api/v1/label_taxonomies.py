@@ -418,3 +418,7 @@ def get_taxonomy_tree(taxonomy_id: str, version_id: str, db: Session = Depends(g
         .order_by(asc(LabelTaxonomyNode.level), asc(LabelTaxonomyNode.sort_order), asc(LabelTaxonomyNode.name))
     ).all()
     return [_to_node_out(row) for row in rows]
+
+
+def ensure_taxonomy_seed(db: Session) -> None:
+    _refresh_taxonomies(db)

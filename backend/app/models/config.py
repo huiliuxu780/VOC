@@ -1,6 +1,6 @@
 ﻿from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, Float, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.time_utils import utc_now
@@ -117,6 +117,46 @@ class LabelTaxonomyNode(Base):
     has_config: Mapped[bool] = mapped_column(Boolean, default=False)
     has_examples: Mapped[bool] = mapped_column(Boolean, default=False)
     config_status: Mapped[str] = mapped_column(String(16), default="empty")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+
+class LabelTaxonomyNodeConfig(Base):
+    __tablename__ = "label_taxonomy_node_config"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    label_node_id: Mapped[str] = mapped_column(String(64), index=True)
+    version: Mapped[str] = mapped_column(String(32), default="v1.0")
+    prompt_name: Mapped[str] = mapped_column(String(128), default="")
+    definition: Mapped[str] = mapped_column(Text, default="")
+    decision_rule: Mapped[str] = mapped_column(Text, default="")
+    exclude_rule: Mapped[str] = mapped_column(Text, default="")
+    tagging_rule: Mapped[str] = mapped_column(Text, default="")
+    system_prompt: Mapped[str] = mapped_column(Text, default="")
+    user_prompt_template: Mapped[str] = mapped_column(Text, default="")
+    output_schema: Mapped[str] = mapped_column(Text, default="")
+    post_process_rule: Mapped[str] = mapped_column(Text, default="")
+    fallback_strategy: Mapped[str] = mapped_column(Text, default="")
+    risk_note: Mapped[str] = mapped_column(Text, default="")
+    remark: Mapped[str] = mapped_column(Text, default="")
+    model_name: Mapped[str] = mapped_column(String(64), default="")
+    temperature: Mapped[float] = mapped_column(Float, default=0.1)
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    created_by: Mapped[str] = mapped_column(String(64), default="system")
+    updated_by: Mapped[str] = mapped_column(String(64), default="system")
+
+
+class LabelTaxonomyNodeExample(Base):
+    __tablename__ = "label_taxonomy_node_example"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    label_node_id: Mapped[str] = mapped_column(String(64), index=True)
+    example_type: Mapped[str] = mapped_column(String(16), default="positive")
+    content: Mapped[str] = mapped_column(Text, default="")
+    expected_label: Mapped[str] = mapped_column(String(64), default="")
+    note: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 

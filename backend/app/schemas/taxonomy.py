@@ -62,3 +62,67 @@ class LabelTaxonomyNodeOut(BaseModel):
     configStatus: str = "empty"
     createdAt: datetime
     updatedAt: datetime
+
+
+class LabelNodeConfigBase(BaseModel):
+    version: str = "v1.0"
+    promptName: str = ""
+    definition: str = ""
+    decisionRule: str = ""
+    excludeRule: str = ""
+    taggingRule: str = ""
+    systemPrompt: str = ""
+    userPromptTemplate: str = ""
+    outputSchema: str = ""
+    postProcessRule: str = ""
+    fallbackStrategy: str = ""
+    riskNote: str = ""
+    remark: str = ""
+    modelName: str = ""
+    temperature: float = 0.1
+    status: str = "draft"
+
+
+class LabelNodeConfigIn(LabelNodeConfigBase):
+    pass
+
+
+class LabelNodeConfigOut(LabelNodeConfigBase):
+    id: str
+    labelNodeId: str
+    createdAt: datetime
+    updatedAt: datetime
+    createdBy: str | None = None
+    updatedBy: str | None = None
+
+
+class LabelNodeExampleBase(BaseModel):
+    exampleType: str = "positive"
+    content: str
+    expectedLabel: str = ""
+    note: str = ""
+
+
+class LabelNodeExampleIn(LabelNodeExampleBase):
+    pass
+
+
+class LabelNodeExampleOut(LabelNodeExampleBase):
+    id: str
+    labelNodeId: str
+    createdAt: datetime
+    updatedAt: datetime
+
+
+class LabelNodeTestIn(BaseModel):
+    contentText: str
+
+
+class LabelNodeTestOut(BaseModel):
+    nodeId: str
+    rawOutput: str
+    parsedOutput: dict
+    hitLabel: str
+    confidence: float
+    latency: int
+    errorMessage: str | None = None

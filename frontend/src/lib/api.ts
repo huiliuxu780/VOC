@@ -323,3 +323,54 @@ export type LabelNodeConfigRecord = {
   createdBy?: string;
   updatedBy?: string;
 };
+
+export type LabelNodeConfigUpsertPayload = {
+  version: string;
+  promptName: string;
+  definition: string;
+  decisionRule: string;
+  excludeRule: string;
+  taggingRule: string;
+  systemPrompt: string;
+  userPromptTemplate: string;
+  outputSchema: string;
+  postProcessRule: string;
+  fallbackStrategy: string;
+  riskNote: string;
+  remark: string;
+  modelName: string;
+  temperature: number;
+  status: "draft" | "published";
+};
+
+export type LabelNodeExampleRecord = {
+  id: string;
+  labelNodeId: string;
+  exampleType: "positive" | "negative" | "boundary" | "counter";
+  content: string;
+  expectedLabel: string;
+  note: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type LabelNodeExampleCreatePayload = {
+  exampleType: "positive" | "negative" | "boundary" | "counter";
+  content: string;
+  expectedLabel: string;
+  note: string;
+};
+
+export type LabelNodeTestPayload = {
+  contentText: string;
+};
+
+export type LabelNodeTestResult = {
+  nodeId: string;
+  rawOutput: string;
+  parsedOutput: Record<string, unknown>;
+  hitLabel: string;
+  confidence: number;
+  latency: number;
+  errorMessage?: string | null;
+};

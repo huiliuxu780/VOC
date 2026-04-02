@@ -263,6 +263,302 @@
         "title": "LabelMoveIn",
         "type": "object"
       },
+      "LabelNodeConfigIn": {
+        "properties": {
+          "decisionRule": {
+            "default": "",
+            "title": "Decisionrule",
+            "type": "string"
+          },
+          "definition": {
+            "default": "",
+            "title": "Definition",
+            "type": "string"
+          },
+          "excludeRule": {
+            "default": "",
+            "title": "Excluderule",
+            "type": "string"
+          },
+          "fallbackStrategy": {
+            "default": "",
+            "title": "Fallbackstrategy",
+            "type": "string"
+          },
+          "modelName": {
+            "default": "",
+            "title": "Modelname",
+            "type": "string"
+          },
+          "outputSchema": {
+            "default": "",
+            "title": "Outputschema",
+            "type": "string"
+          },
+          "postProcessRule": {
+            "default": "",
+            "title": "Postprocessrule",
+            "type": "string"
+          },
+          "promptName": {
+            "default": "",
+            "title": "Promptname",
+            "type": "string"
+          },
+          "remark": {
+            "default": "",
+            "title": "Remark",
+            "type": "string"
+          },
+          "riskNote": {
+            "default": "",
+            "title": "Risknote",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "title": "Status",
+            "type": "string"
+          },
+          "systemPrompt": {
+            "default": "",
+            "title": "Systemprompt",
+            "type": "string"
+          },
+          "taggingRule": {
+            "default": "",
+            "title": "Taggingrule",
+            "type": "string"
+          },
+          "temperature": {
+            "default": 0.1,
+            "title": "Temperature",
+            "type": "number"
+          },
+          "userPromptTemplate": {
+            "default": "",
+            "title": "Userprompttemplate",
+            "type": "string"
+          },
+          "version": {
+            "default": "v1.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "title": "LabelNodeConfigIn",
+        "type": "object"
+      },
+      "LabelNodeConfigOut": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "createdBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdby"
+          },
+          "decisionRule": {
+            "default": "",
+            "title": "Decisionrule",
+            "type": "string"
+          },
+          "definition": {
+            "default": "",
+            "title": "Definition",
+            "type": "string"
+          },
+          "excludeRule": {
+            "default": "",
+            "title": "Excluderule",
+            "type": "string"
+          },
+          "fallbackStrategy": {
+            "default": "",
+            "title": "Fallbackstrategy",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "labelNodeId": {
+            "title": "Labelnodeid",
+            "type": "string"
+          },
+          "modelName": {
+            "default": "",
+            "title": "Modelname",
+            "type": "string"
+          },
+          "outputSchema": {
+            "default": "",
+            "title": "Outputschema",
+            "type": "string"
+          },
+          "postProcessRule": {
+            "default": "",
+            "title": "Postprocessrule",
+            "type": "string"
+          },
+          "promptName": {
+            "default": "",
+            "title": "Promptname",
+            "type": "string"
+          },
+          "remark": {
+            "default": "",
+            "title": "Remark",
+            "type": "string"
+          },
+          "riskNote": {
+            "default": "",
+            "title": "Risknote",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "title": "Status",
+            "type": "string"
+          },
+          "systemPrompt": {
+            "default": "",
+            "title": "Systemprompt",
+            "type": "string"
+          },
+          "taggingRule": {
+            "default": "",
+            "title": "Taggingrule",
+            "type": "string"
+          },
+          "temperature": {
+            "default": 0.1,
+            "title": "Temperature",
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          },
+          "updatedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedby"
+          },
+          "userPromptTemplate": {
+            "default": "",
+            "title": "Userprompttemplate",
+            "type": "string"
+          },
+          "version": {
+            "default": "v1.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "labelNodeId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LabelNodeConfigOut",
+        "type": "object"
+      },
+      "LabelNodeExampleIn": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "exampleType": {
+            "default": "positive",
+            "title": "Exampletype",
+            "type": "string"
+          },
+          "expectedLabel": {
+            "default": "",
+            "title": "Expectedlabel",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "LabelNodeExampleIn",
+        "type": "object"
+      },
+      "LabelNodeExampleOut": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "exampleType": {
+            "default": "positive",
+            "title": "Exampletype",
+            "type": "string"
+          },
+          "expectedLabel": {
+            "default": "",
+            "title": "Expectedlabel",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "labelNodeId": {
+            "title": "Labelnodeid",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content",
+          "id",
+          "labelNodeId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LabelNodeExampleOut",
+        "type": "object"
+      },
       "LabelNodeIn": {
         "properties": {
           "category_id": {
@@ -378,6 +674,69 @@
           "id"
         ],
         "title": "LabelNodeOut",
+        "type": "object"
+      },
+      "LabelNodeTestIn": {
+        "properties": {
+          "contentText": {
+            "title": "Contenttext",
+            "type": "string"
+          }
+        },
+        "required": [
+          "contentText"
+        ],
+        "title": "LabelNodeTestIn",
+        "type": "object"
+      },
+      "LabelNodeTestOut": {
+        "properties": {
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "errorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errormessage"
+          },
+          "hitLabel": {
+            "title": "Hitlabel",
+            "type": "string"
+          },
+          "latency": {
+            "title": "Latency",
+            "type": "integer"
+          },
+          "nodeId": {
+            "title": "Nodeid",
+            "type": "string"
+          },
+          "parsedOutput": {
+            "additionalProperties": true,
+            "title": "Parsedoutput",
+            "type": "object"
+          },
+          "rawOutput": {
+            "title": "Rawoutput",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodeId",
+          "rawOutput",
+          "parsedOutput",
+          "hitLabel",
+          "confidence",
+          "latency"
+        ],
+        "title": "LabelNodeTestOut",
         "type": "object"
       },
       "LabelTaxonomyIn": {
@@ -2002,6 +2361,246 @@
         "summary": "Trigger Job",
         "tags": [
           "jobs"
+        ]
+      }
+    },
+    "/api/v1/label-nodes/{node_id}/config": {
+      "get": {
+        "operationId": "get_node_config_api_v1_label_nodes__node_id__config_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeConfigOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Node Config",
+        "tags": [
+          "label-nodes"
+        ]
+      },
+      "put": {
+        "operationId": "upsert_node_config_api_v1_label_nodes__node_id__config_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelNodeConfigIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeConfigOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upsert Node Config",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
+    "/api/v1/label-nodes/{node_id}/examples": {
+      "get": {
+        "operationId": "list_node_examples_api_v1_label_nodes__node_id__examples_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelNodeExampleOut"
+                  },
+                  "title": "Response List Node Examples Api V1 Label Nodes  Node Id  Examples Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Node Examples",
+        "tags": [
+          "label-nodes"
+        ]
+      },
+      "post": {
+        "operationId": "create_node_example_api_v1_label_nodes__node_id__examples_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelNodeExampleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeExampleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Node Example",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
+    "/api/v1/label-nodes/{node_id}/test": {
+      "post": {
+        "operationId": "run_node_test_api_v1_label_nodes__node_id__test_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelNodeTestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeTestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Node Test",
+        "tags": [
+          "label-nodes"
         ]
       }
     },

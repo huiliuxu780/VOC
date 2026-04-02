@@ -4,8 +4,17 @@ import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { Textarea } from "../components/ui/Textarea";
-import { apiGet } from "../lib/api";
-import type { LabelNodeConfigRecord, LabelNodeRecord, LabelTaxonomyRecord, LabelTaxonomyVersionRecord } from "../lib/api";
+import { apiGet, apiPost, apiPut } from "../lib/api";
+import type {
+  LabelNodeConfigRecord,
+  LabelNodeConfigUpsertPayload,
+  LabelNodeExampleCreatePayload,
+  LabelNodeExampleRecord,
+  LabelNodeRecord,
+  LabelNodeTestResult,
+  LabelTaxonomyRecord,
+  LabelTaxonomyVersionRecord
+} from "../lib/api";
 import {
   defaultVersionIdForTaxonomy,
   demoTaxonomies,
@@ -18,6 +27,39 @@ import {
 
 type NodeTab = "basic" | "rule-prompt" | "examples" | "testing" | "versions" | "mapping";
 
+const EXAMPLE_TYPE_OPTIONS = [
+  { value: "positive", label: "positive" },
+  { value: "negative", label: "negative" },
+  { value: "boundary", label: "boundary" },
+  { value: "counter", label: "counter" }
+] as const;
+
+const emptyConfigPayload: LabelNodeConfigUpsertPayload = {
+  version: "v1.0",
+  promptName: "",
+  definition: "",
+  decisionRule: "",
+  excludeRule: "",
+  taggingRule: "",
+  systemPrompt: "",
+  userPromptTemplate: "",
+  outputSchema: "",
+  postProcessRule: "",
+  fallbackStrategy: "",
+  riskNote: "",
+  remark: "",
+  modelName: "gpt-4.1-mini",
+  temperature: 0.1,
+  status: "draft"
+};
+
+const emptyExampleDraft: LabelNodeExampleCreatePayload = {
+  exampleType: "positive",
+  content: "",
+  expectedLabel: "",
+  note: ""
+};
+
 function configStatusClass(status: LabelNodeRecord["configStatus"]) {
   if (status === "published") return "border-emerald-400/40 bg-emerald-500/10 text-emerald-100";
   if (status === "draft") return "border-amber-400/40 bg-amber-500/10 text-amber-100";
@@ -25,19 +67,57 @@ function configStatusClass(status: LabelNodeRecord["configStatus"]) {
   return "border-white/15 bg-white/[0.03] text-textSecondary";
 }
 
+function toConfigPayload(record: LabelNodeConfigRecord | null): LabelNodeConfigUpsertPayload {
+  if (!record) return emptyConfigPayload;
+  return {
+    version: record.version ?? "v1.0",
+    promptName: record.promptName ?? "",
+    definition: record.definition ?? "",
+    decisionRule: record.decisionRule ?? "",
+    excludeRule: record.excludeRule ?? "",
+    taggingRule: record.taggingRule ?? "",
+    systemPrompt: record.systemPrompt ?? "",
+    userPromptTemplate: record.userPromptTemplate ?? "",
+    outputSchema: record.outputSchema ?? "",
+    postProcessRule: record.postProcessRule ?? "",
+    fallbackStrategy: record.fallbackStrategy ?? "",
+    riskNote: record.riskNote ?? "",
+    remark: record.remark ?? "",
+    modelName: record.modelName ?? "gpt-4.1-mini",
+    temperature: record.temperature ?? 0.1,
+    status: record.status ?? "draft"
+  };
+}
+
 export function LabelTaxonomyDetailPage() {
   const navigate = useNavigate();
   const { taxonomyId = "", versionId, nodeId } = useParams<{ taxonomyId: string; versionId: string; nodeId?: string }>();
+
   const [taxonomyOptions, setTaxonomyOptions] = useState<LabelTaxonomyRecord[]>([]);
   const [versionOptions, setVersionOptions] = useState<LabelTaxonomyVersionRecord[]>([]);
   const [taxonomy, setTaxonomy] = useState<LabelTaxonomyRecord | null>(null);
   const [version, setVersion] = useState<LabelTaxonomyVersionRecord | null>(null);
   const [nodes, setNodes] = useState<LabelNodeRecord[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+
   const [selectedTab, setSelectedTab] = useState<NodeTab>("basic");
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState("Loading taxonomy detail...");
+
+  const [configLoading, setConfigLoading] = useState(false);
+  const [configSaving, setConfigSaving] = useState(false);
+  const [nodeConfig, setNodeConfig] = useState<LabelNodeConfigRecord | null>(null);
+  const [configDraft, setConfigDraft] = useState<LabelNodeConfigUpsertPayload>(emptyConfigPayload);
+
+  const [examplesLoading, setExamplesLoading] = useState(false);
+  const [exampleSaving, setExampleSaving] = useState(false);
+  const [examples, setExamples] = useState<LabelNodeExampleRecord[]>([]);
+  const [exampleDraft, setExampleDraft] = useState<LabelNodeExampleCreatePayload>(emptyExampleDraft);
+
+  const [testInput, setTestInput] = useState("Appointment delayed twice and nobody follows up.");
+  const [testRunning, setTestRunning] = useState(false);
+  const [testResult, setTestResult] = useState<LabelNodeTestResult | null>(null);
 
   const resolvedVersionId = versionId ?? defaultVersionIdForTaxonomy(taxonomyId);
 
@@ -99,11 +179,64 @@ export function LabelTaxonomyDetailPage() {
   }, [nodes, searchText]);
 
   const selectedNode = useMemo(() => nodes.find((item) => item.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
-  const selectedNodeConfig: LabelNodeConfigRecord | null = useMemo(
-    () => (selectedNode ? getDemoNodeConfig(selectedNode.id) : null),
-    [selectedNode]
-  );
   const selectedNodePath = selectedNode?.pathNames.join(" / ") ?? "-";
+
+  const groupedExamples = useMemo(() => {
+    const groups: Record<string, LabelNodeExampleRecord[]> = {
+      positive: [],
+      negative: [],
+      boundary: [],
+      counter: []
+    };
+    for (const item of examples) {
+      const key = item.exampleType;
+      if (groups[key]) groups[key].push(item);
+    }
+    return groups;
+  }, [examples]);
+
+  useEffect(() => {
+    if (!selectedNodeId) {
+      setNodeConfig(null);
+      setConfigDraft(emptyConfigPayload);
+      setExamples([]);
+      setTestResult(null);
+      return;
+    }
+    const currentNodeId = selectedNodeId;
+
+    let mounted = true;
+    async function loadNodeDetails() {
+      setConfigLoading(true);
+      setExamplesLoading(true);
+      try {
+        const [config, exampleRows] = await Promise.all([
+          apiGet<LabelNodeConfigRecord>(`/label-nodes/${currentNodeId}/config`),
+          apiGet<LabelNodeExampleRecord[]>(`/label-nodes/${currentNodeId}/examples`)
+        ]);
+        if (!mounted) return;
+        setNodeConfig(config);
+        setConfigDraft(toConfigPayload(config));
+        setExamples(exampleRows);
+      } catch {
+        if (!mounted) return;
+        const fallbackConfig = getDemoNodeConfig(currentNodeId);
+        setNodeConfig(fallbackConfig);
+        setConfigDraft(toConfigPayload(fallbackConfig));
+        setExamples([]);
+      } finally {
+        if (mounted) {
+          setConfigLoading(false);
+          setExamplesLoading(false);
+          setTestResult(null);
+        }
+      }
+    }
+    void loadNodeDetails();
+    return () => {
+      mounted = false;
+    };
+  }, [selectedNodeId]);
 
   function selectNode(nextNodeId: string) {
     setSelectedNodeId(nextNodeId);
@@ -120,6 +253,67 @@ export function LabelTaxonomyDetailPage() {
   function switchVersion(nextVersionId: string) {
     if (!taxonomyId) return;
     navigate(`/label-taxonomies/${taxonomyId}/version/${nextVersionId}`);
+  }
+
+  async function saveConfig(nextStatus?: LabelNodeConfigUpsertPayload["status"]) {
+    if (!selectedNodeId) return;
+    const payload = {
+      ...configDraft,
+      status: nextStatus ?? configDraft.status
+    };
+    setConfigSaving(true);
+    try {
+      const updated = await apiPut<LabelNodeConfigRecord>(`/label-nodes/${selectedNodeId}/config`, payload);
+      setNodeConfig(updated);
+      setConfigDraft(toConfigPayload(updated));
+      setNotice(`Saved node config for ${selectedNodeId}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Failed to save node config");
+    } finally {
+      setConfigSaving(false);
+    }
+  }
+
+  async function addExample() {
+    if (!selectedNodeId) return;
+    if (!exampleDraft.content.trim()) {
+      setNotice("Example content is required.");
+      return;
+    }
+    setExampleSaving(true);
+    try {
+      const created = await apiPost<LabelNodeExampleRecord>(`/label-nodes/${selectedNodeId}/examples`, {
+        ...exampleDraft,
+        content: exampleDraft.content.trim(),
+        expectedLabel: exampleDraft.expectedLabel.trim(),
+        note: exampleDraft.note.trim()
+      });
+      setExamples((prev) => [created, ...prev]);
+      setExampleDraft(emptyExampleDraft);
+      setNotice(`Added example to node ${selectedNodeId}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Failed to add example");
+    } finally {
+      setExampleSaving(false);
+    }
+  }
+
+  async function runNodeTest() {
+    if (!selectedNodeId) return;
+    if (!testInput.trim()) {
+      setNotice("Testing input is required.");
+      return;
+    }
+    setTestRunning(true);
+    try {
+      const result = await apiPost<LabelNodeTestResult>(`/label-nodes/${selectedNodeId}/test`, { contentText: testInput.trim() });
+      setTestResult(result);
+      setNotice(`Test completed: ${result.hitLabel} (${Math.round(result.confidence * 100)}%)`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Node test failed");
+    } finally {
+      setTestRunning(false);
+    }
   }
 
   return (
@@ -259,33 +453,186 @@ export function LabelTaxonomyDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="rule-prompt" className="space-y-3">
+                      {configLoading ? <p className="text-xs text-textSecondary">Loading node config...</p> : null}
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <label className="space-y-1 text-xs text-textSecondary">
+                          <span>Prompt Name</span>
+                          <input
+                            value={configDraft.promptName}
+                            onChange={(event) => setConfigDraft((prev) => ({ ...prev, promptName: event.target.value }))}
+                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors focus:border-indigo-300/60"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs text-textSecondary">
+                          <span>Version</span>
+                          <input
+                            value={configDraft.version}
+                            onChange={(event) => setConfigDraft((prev) => ({ ...prev, version: event.target.value }))}
+                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors focus:border-indigo-300/60"
+                          />
+                        </label>
+                      </div>
+
                       <label className="space-y-1 text-xs text-textSecondary">
                         <span>Definition</span>
-                        <Textarea rows={3} defaultValue={selectedNodeConfig?.definition ?? "Fill node definition..."} />
+                        <Textarea rows={3} value={configDraft.definition} onChange={(event) => setConfigDraft((prev) => ({ ...prev, definition: event.target.value }))} />
                       </label>
                       <label className="space-y-1 text-xs text-textSecondary">
                         <span>Decision Rule</span>
-                        <Textarea rows={3} defaultValue={selectedNodeConfig?.decisionRule ?? "Fill decision rule..."} />
+                        <Textarea rows={3} value={configDraft.decisionRule} onChange={(event) => setConfigDraft((prev) => ({ ...prev, decisionRule: event.target.value }))} />
                       </label>
                       <label className="space-y-1 text-xs text-textSecondary">
                         <span>System Prompt</span>
-                        <Textarea rows={4} defaultValue={selectedNodeConfig?.systemPrompt ?? "You are VOC label classification expert..."} />
+                        <Textarea rows={4} value={configDraft.systemPrompt} onChange={(event) => setConfigDraft((prev) => ({ ...prev, systemPrompt: event.target.value }))} />
                       </label>
+                      <label className="space-y-1 text-xs text-textSecondary">
+                        <span>User Prompt Template</span>
+                        <Textarea
+                          rows={3}
+                          value={configDraft.userPromptTemplate}
+                          onChange={(event) => setConfigDraft((prev) => ({ ...prev, userPromptTemplate: event.target.value }))}
+                        />
+                      </label>
+                      <label className="space-y-1 text-xs text-textSecondary">
+                        <span>Output Schema</span>
+                        <Textarea rows={3} value={configDraft.outputSchema} onChange={(event) => setConfigDraft((prev) => ({ ...prev, outputSchema: event.target.value }))} />
+                      </label>
+
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={configSaving}
+                          onClick={() => void saveConfig("draft")}
+                          className="cursor-pointer rounded-lg border border-indigo-400/45 px-3 py-1.5 text-xs text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {configSaving ? "Saving..." : "Save Config"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={configSaving}
+                          onClick={() => void saveConfig("published")}
+                          className="cursor-pointer rounded-lg border border-emerald-400/45 px-3 py-1.5 text-xs text-emerald-100 transition-colors hover:border-emerald-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Publish Config
+                        </button>
+                        <span className="text-xs text-textSecondary">
+                          Current status: {nodeConfig?.status ?? configDraft.status}
+                        </span>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="examples" className="space-y-3">
-                      <p className="text-sm text-textSecondary">Examples tab placeholder for P0. Positive/negative/boundary groups will land next iteration.</p>
-                      <div className="rounded-lg border border-dashed border-white/20 p-4 text-xs text-textSecondary">Examples list placeholder</div>
+                      {examplesLoading ? <p className="text-xs text-textSecondary">Loading examples...</p> : null}
+
+                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                        <p className="mb-2 text-xs text-textSecondary">Add Example</p>
+                        <div className="grid gap-2 md:grid-cols-[180px_1fr]">
+                          <Select
+                            value={exampleDraft.exampleType}
+                            onChange={(value) => setExampleDraft((prev) => ({ ...prev, exampleType: value as LabelNodeExampleCreatePayload["exampleType"] }))}
+                            options={EXAMPLE_TYPE_OPTIONS.map((item) => ({ value: item.value, label: item.label }))}
+                          />
+                          <input
+                            value={exampleDraft.expectedLabel}
+                            onChange={(event) => setExampleDraft((prev) => ({ ...prev, expectedLabel: event.target.value }))}
+                            placeholder="Expected label (optional)"
+                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
+                          />
+                        </div>
+                        <div className="mt-2 space-y-2">
+                          <Textarea
+                            rows={3}
+                            value={exampleDraft.content}
+                            onChange={(event) => setExampleDraft((prev) => ({ ...prev, content: event.target.value }))}
+                            placeholder="Example content..."
+                          />
+                          <Textarea
+                            rows={2}
+                            value={exampleDraft.note}
+                            onChange={(event) => setExampleDraft((prev) => ({ ...prev, note: event.target.value }))}
+                            placeholder="Note..."
+                          />
+                        </div>
+                        <div className="mt-2">
+                          <button
+                            type="button"
+                            disabled={exampleSaving}
+                            onClick={() => void addExample()}
+                            className="cursor-pointer rounded-lg border border-indigo-400/45 px-3 py-1.5 text-xs text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {exampleSaving ? "Adding..." : "Add Example"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {Object.entries(groupedExamples).map(([group, rows]) => (
+                          <div key={group} className="rounded-lg border border-white/10 bg-black/15 p-3">
+                            <p className="mb-2 text-xs uppercase tracking-wide text-textSecondary">
+                              {group} ({rows.length})
+                            </p>
+                            {rows.length === 0 ? <p className="text-xs text-textSecondary">No examples.</p> : null}
+                            <div className="space-y-2">
+                              {rows.map((item) => (
+                                <article key={item.id} className="rounded-md border border-white/10 bg-white/[0.02] p-2">
+                                  <p className="text-sm text-textPrimary">{item.content}</p>
+                                  <p className="mt-1 text-[11px] text-textSecondary">
+                                    expected: {item.expectedLabel || "-"} | note: {item.note || "-"}
+                                  </p>
+                                </article>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="testing" className="space-y-3">
                       <label className="space-y-1 text-xs text-textSecondary">
                         <span>Testing Input</span>
-                        <Textarea rows={4} defaultValue="Appointment delayed twice and nobody follows up." />
+                        <Textarea rows={4} value={testInput} onChange={(event) => setTestInput(event.target.value)} />
                       </label>
-                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3 text-xs text-textSecondary">
-                        Result placeholder: rawOutput / parsedOutput / hitLabel / confidence / latency / errorMessage
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          disabled={testRunning}
+                          onClick={() => void runNodeTest()}
+                          className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {testRunning ? "Running..." : "Run Test"}
+                        </button>
                       </div>
+
+                      {testResult ? (
+                        <div className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3 text-xs text-textSecondary">
+                          <p>
+                            hitLabel: <span className="text-textPrimary">{testResult.hitLabel}</span>
+                          </p>
+                          <p>
+                            confidence: <span className="text-textPrimary">{testResult.confidence}</span> | latency:{" "}
+                            <span className="text-textPrimary">{testResult.latency}ms</span>
+                          </p>
+                          <p>
+                            errorMessage: <span className="text-textPrimary">{testResult.errorMessage ?? "-"}</span>
+                          </p>
+                          <div>
+                            <p className="mb-1">parsedOutput:</p>
+                            <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                              {JSON.stringify(testResult.parsedOutput, null, 2)}
+                            </pre>
+                          </div>
+                          <div>
+                            <p className="mb-1">rawOutput:</p>
+                            <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                              {testResult.rawOutput}
+                            </pre>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-white/20 p-3 text-xs text-textSecondary">
+                          Run test to view rawOutput / parsedOutput / hitLabel / confidence / latency / errorMessage.
+                        </div>
+                      )}
                     </TabsContent>
 
                     <TabsContent value="versions" className="space-y-3">
