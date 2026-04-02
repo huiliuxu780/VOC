@@ -1,5 +1,6 @@
 ﻿import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSelectionSource } from "../hooks/useSelectionSource";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { apiDelete, apiGet, apiPost, apiPut, LabelRecord, LabelUpsertPayload } from "../lib/api";
@@ -88,14 +89,14 @@ export function LabelManagementPage() {
   }, [labels, searchText, levelFilter]);
   const hasSearchText = searchText.trim().length > 0;
   const labelButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
-  const searchSelectionSourceRef = useRef<"keyboard" | "pointer" | null>(null);
+  const { setSelectionSource, getSelectionSource, clearSelectionSource } = useSelectionSource();
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
   const watchedParentId = watch("parent_id");
   const parentSelectValue = watchedParentId === null ? "null" : String(watchedParentId);
 
   function selectLabelFromSearchResults(label: LabelRecord, source: "keyboard" | "pointer") {
-    searchSelectionSourceRef.current = source;
+    setSelectionSource(source);
     setSelectedLabelId(label.id);
     setNotice(`Selected label #${label.id} from search results`);
   }
@@ -206,7 +207,7 @@ export function LabelManagementPage() {
   }, [selectedLabel, reset]);
 
   useEffect(() => {
-    if (searchSelectionSourceRef.current !== "keyboard") return;
+    if (getSelectionSource() !== "keyboard") return;
     if (!hasSearchText || selectedLabelId === null) return;
     if (!filteredLabels.some((item) => item.id === selectedLabelId)) return;
     const activeButton = labelButtonRefs.current[selectedLabelId];
@@ -218,8 +219,8 @@ export function LabelManagementPage() {
       block: "nearest",
       behavior: getScrollBehaviorForReducedMotion(prefersReducedMotion)
     });
-    searchSelectionSourceRef.current = null;
-  }, [hasSearchText, selectedLabelId, filteredLabels]);
+    clearSelectionSource();
+  }, [hasSearchText, selectedLabelId, filteredLabels, getSelectionSource, clearSelectionSource]);
 
   return (
     <div className="space-y-6">
@@ -260,14 +261,14 @@ export function LabelManagementPage() {
                 value={searchText}
                 aria-label="Search labels"
                 onChange={(event) => {
-                  searchSelectionSourceRef.current = null;
+                  clearSelectionSource();
                   setSearchText(event.target.value);
                 }}
                 onKeyDown={(event) => {
                   if (event.nativeEvent.isComposing) return;
                   if (event.key === "Escape" && hasSearchText) {
                     event.preventDefault();
-                    searchSelectionSourceRef.current = null;
+                    clearSelectionSource();
                     setSearchText("");
                     return;
                   }
@@ -301,7 +302,7 @@ export function LabelManagementPage() {
                   type="button"
                   aria-label="Clear search"
                   onClick={() => {
-                    searchSelectionSourceRef.current = null;
+                    clearSelectionSource();
                     setSearchText("");
                   }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-md border border-white/20 px-2 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
@@ -332,7 +333,7 @@ export function LabelManagementPage() {
                     labelButtonRefs.current[item.id] = node;
                   }}
                   onClick={() => {
-                    searchSelectionSourceRef.current = "pointer";
+                    setSelectionSource("pointer");
                     setSelectedLabelId(item.id);
                   }}
                   className={[
