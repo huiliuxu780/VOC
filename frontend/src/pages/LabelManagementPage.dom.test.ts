@@ -263,4 +263,49 @@ describe("LabelManagementPage DOM interactions", () => {
 
     await unmount();
   });
+
+  it("scrolls active match into view during keyboard navigation", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);
+
+    const originalScrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
+    const scrollIntoViewMock = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock
+    });
+
+    try {
+      const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+      await waitFor(() => {
+        expect(container.textContent).toContain("Loaded 3 labels");
+      });
+
+      const searchInput = container.querySelector("input[aria-label='Search labels']");
+      expect(searchInput).not.toBeNull();
+
+      await changeInputValue(searchInput as HTMLInputElement, "install");
+      await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+
+      await waitFor(() => {
+        expect(scrollIntoViewMock).toHaveBeenCalled();
+      });
+
+      expect(scrollIntoViewMock).toHaveBeenLastCalledWith({ block: "nearest", behavior: "smooth" });
+
+      await unmount();
+    } finally {
+      if (originalScrollDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", originalScrollDescriptor);
+      } else {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+          configurable: true,
+          writable: true,
+          value: () => {}
+        });
+      }
+    }
+  });
 });

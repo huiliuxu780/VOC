@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-search-active-row-scroll
+
+- **用途：** 增强标签搜索键盘体验，活动项切换时自动滚动到可视区域
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 在搜索活动项切换时增加自动滚动：当存在关键词且当前选中项在过滤结果中时，自动将该项 `scrollIntoView` 到可视区域（`nearest`）；同时补充 DOM 回归测试验证键盘切换后触发滚动。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 7 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 自动滚动如果触发过于频繁，可能造成列表抖动或影响手动滚动体验。
+- **下一步：** 发起 PR 评审并合并；后续可按需增加“仅键盘导航触发自动滚动”的策略开关。
+
+---
+
 ## feature/label-search-active-row-state
 
 - **用途：** 为标签搜索键盘导航增加活动项视觉态，提升当前命中项辨识度

@@ -1,4 +1,4 @@
-﻿import { useDeferredValue, useEffect, useMemo, useState } from "react";
+﻿import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
@@ -87,6 +87,7 @@ export function LabelManagementPage() {
     return filterLabels(labels, searchText, levelFilter);
   }, [labels, searchText, levelFilter]);
   const hasSearchText = searchText.trim().length > 0;
+  const labelButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
   const watchedParentId = watch("parent_id");
@@ -202,6 +203,13 @@ export function LabelManagementPage() {
     setMoveTargetParentId(selectedLabel.parent_id === null ? "null" : String(selectedLabel.parent_id));
   }, [selectedLabel, reset]);
 
+  useEffect(() => {
+    if (!hasSearchText || selectedLabelId === null) return;
+    if (!filteredLabels.some((item) => item.id === selectedLabelId)) return;
+    const activeButton = labelButtonRefs.current[selectedLabelId];
+    activeButton?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [hasSearchText, selectedLabelId, filteredLabels]);
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2 text-xs text-textSecondary">{notice}</div>
@@ -302,6 +310,9 @@ export function LabelManagementPage() {
                   data-label-id={item.id}
                   data-active-match={isActiveMatch ? "true" : "false"}
                   aria-current={isActiveMatch ? "true" : undefined}
+                  ref={(node) => {
+                    labelButtonRefs.current[item.id] = node;
+                  }}
                   onClick={() => setSelectedLabelId(item.id)}
                   className={[
                     "w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
@@ -449,4 +460,5 @@ export function LabelManagementPage() {
     </div>
   );
 }
+
 
