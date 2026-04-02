@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 在搜索活动项切换时增加自动滚动：当存在关键词且当前选中项在过滤结果中时，自动将该项 `scrollIntoView` 到可视区域（`nearest`）；同时补充 DOM 回归测试验证键盘切换后触发滚动。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 自动滚动如果触发过于频繁，可能造成列表抖动或影响手动滚动体验。
-- **下一步：** 发起 PR 评审并合并；后续可按需增加“仅键盘导航触发自动滚动”的策略开关。
+- **下一步：** 已合并到 `main`；后续可按需增加“仅键盘导航触发自动滚动”的策略开关。
 
 ---
 
