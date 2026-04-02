@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 将活动项自动滚动触发条件收敛为“仅键盘导航来源”：方向键/Enter 选中时触发 `scrollIntoView`，鼠标点击选中不触发自动滚动，避免列表无谓跳动；补充 DOM 回归测试验证两种来源行为分离。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 触发来源判断若遗漏路径，可能导致键盘滚动失效或点击仍触发滚动。
-- **下一步：** 发起 PR 评审并合并；后续可补充 `prefers-reduced-motion` 下自动滚动行为降级策略。
+- **下一步：** 已合并到 `main`；后续可补充 `prefers-reduced-motion` 下自动滚动行为降级策略。
 
 ---
 
