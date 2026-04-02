@@ -308,4 +308,50 @@ describe("LabelManagementPage DOM interactions", () => {
       }
     }
   });
+
+  it("does not auto-scroll when selecting by pointer click", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);
+
+    const originalScrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
+    const scrollIntoViewMock = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock
+    });
+
+    try {
+      const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+      await waitFor(() => {
+        expect(container.textContent).toContain("Loaded 3 labels");
+      });
+
+      const searchInput = container.querySelector("input[aria-label='Search labels']");
+      expect(searchInput).not.toBeNull();
+      await changeInputValue(searchInput as HTMLInputElement, "install");
+
+      const targetButton = container.querySelector("button[data-label-id='2']") as HTMLButtonElement | null;
+      expect(targetButton).not.toBeNull();
+      await clickElement(targetButton as HTMLButtonElement);
+
+      await waitFor(() => {
+        expect(container.querySelector("button[data-label-id='2']")?.getAttribute("data-active-match")).toBe("true");
+      });
+
+      expect(scrollIntoViewMock).toHaveBeenCalledTimes(0);
+      await unmount();
+    } finally {
+      if (originalScrollDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", originalScrollDescriptor);
+      } else {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+          configurable: true,
+          writable: true,
+          value: () => {}
+        });
+      }
+    }
+  });
 });

@@ -88,12 +88,14 @@ export function LabelManagementPage() {
   }, [labels, searchText, levelFilter]);
   const hasSearchText = searchText.trim().length > 0;
   const labelButtonRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+  const searchSelectionSourceRef = useRef<"keyboard" | "pointer" | null>(null);
 
   const parentOptions = useMemo(() => labels.filter((item) => item.id !== selectedLabelId), [labels, selectedLabelId]);
   const watchedParentId = watch("parent_id");
   const parentSelectValue = watchedParentId === null ? "null" : String(watchedParentId);
 
-  function selectLabelFromSearchResults(label: LabelRecord) {
+  function selectLabelFromSearchResults(label: LabelRecord, source: "keyboard" | "pointer") {
+    searchSelectionSourceRef.current = source;
     setSelectedLabelId(label.id);
     setNotice(`Selected label #${label.id} from search results`);
   }
@@ -204,10 +206,12 @@ export function LabelManagementPage() {
   }, [selectedLabel, reset]);
 
   useEffect(() => {
+    if (searchSelectionSourceRef.current !== "keyboard") return;
     if (!hasSearchText || selectedLabelId === null) return;
     if (!filteredLabels.some((item) => item.id === selectedLabelId)) return;
     const activeButton = labelButtonRefs.current[selectedLabelId];
     activeButton?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    searchSelectionSourceRef.current = null;
   }, [hasSearchText, selectedLabelId, filteredLabels]);
 
   return (
@@ -248,24 +252,28 @@ export function LabelManagementPage() {
               <input
                 value={searchText}
                 aria-label="Search labels"
-                onChange={(event) => setSearchText(event.target.value)}
+                onChange={(event) => {
+                  searchSelectionSourceRef.current = null;
+                  setSearchText(event.target.value);
+                }}
                 onKeyDown={(event) => {
                   if (event.nativeEvent.isComposing) return;
                   if (event.key === "Escape" && hasSearchText) {
                     event.preventDefault();
+                    searchSelectionSourceRef.current = null;
                     setSearchText("");
                     return;
                   }
                   if (event.key === "Enter" && liveFilteredLabels.length > 0) {
                     event.preventDefault();
-                    selectLabelFromSearchResults(liveFilteredLabels[0]);
+                    selectLabelFromSearchResults(liveFilteredLabels[0], "keyboard");
                     return;
                   }
                   if (event.key === "ArrowDown" && liveFilteredLabels.length > 0) {
                     event.preventDefault();
                     const currentIndex = liveFilteredLabels.findIndex((item) => item.id === selectedLabelId);
                     const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % liveFilteredLabels.length;
-                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex]);
+                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex], "keyboard");
                     return;
                   }
                   if (event.key === "ArrowUp" && liveFilteredLabels.length > 0) {
@@ -275,7 +283,7 @@ export function LabelManagementPage() {
                       currentIndex === -1
                         ? liveFilteredLabels.length - 1
                         : (currentIndex - 1 + liveFilteredLabels.length) % liveFilteredLabels.length;
-                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex]);
+                    selectLabelFromSearchResults(liveFilteredLabels[nextIndex], "keyboard");
                   }
                 }}
                 placeholder="Search by name or code..."
@@ -285,7 +293,10 @@ export function LabelManagementPage() {
                 <button
                   type="button"
                   aria-label="Clear search"
-                  onClick={() => setSearchText("")}
+                  onClick={() => {
+                    searchSelectionSourceRef.current = null;
+                    setSearchText("");
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded-md border border-white/20 px-2 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60"
                 >
                   Clear
@@ -313,7 +324,10 @@ export function LabelManagementPage() {
                   ref={(node) => {
                     labelButtonRefs.current[item.id] = node;
                   }}
-                  onClick={() => setSelectedLabelId(item.id)}
+                  onClick={() => {
+                    searchSelectionSourceRef.current = "pointer";
+                    setSelectedLabelId(item.id);
+                  }}
                   className={[
                     "w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/60",
                     isActiveMatch

@@ -35,6 +35,29 @@
 
 ---
 
+## feature/label-search-scroll-keyboard-only
+
+- **用途：** 限定搜索自动滚动触发条件，仅在键盘导航时滚动活动项
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 将活动项自动滚动触发条件收敛为“仅键盘导航来源”：方向键/Enter 选中时触发 `scrollIntoView`，鼠标点击选中不触发自动滚动，避免列表无谓跳动；补充 DOM 回归测试验证两种来源行为分离。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 8 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 触发来源判断若遗漏路径，可能导致键盘滚动失效或点击仍触发滚动。
+- **下一步：** 发起 PR 评审并合并；后续可补充 `prefers-reduced-motion` 下自动滚动行为降级策略。
+
+---
+
 ## feature/label-search-active-row-scroll
 
 - **用途：** 增强标签搜索键盘体验，活动项切换时自动滚动到可视区域
