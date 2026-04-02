@@ -35,6 +35,27 @@
 
 ---
 
+## chore/release-stabilization-v0-2-0
+
+- **用途：** 发布前收口：清理遗留分支记录状态、执行发布检查并打版本标签
+- **任务类型：** 杂项
+- **关联页面/模块：** 发布流程 / 分支记录（`docs/branch-log.md`、`release-check.ps1`、`release-tag.ps1`）
+- **基于分支：** main
+- **主要改动文件：**
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已将两条历史遗留分支记录（`feature/tag-hierarchy-page`、`fix/sidebar-scroll-clipping`）按当前代码基线回写为 `abandoned`，并补充原因；已执行发布检查脚本并通过。
+- **验证情况：**
+  - lint：不适用
+  - tests：`powershell -ExecutionPolicy Bypass -File .\release-check.ps1` 通过（含 smoke）
+  - type-check：`release-check` 内前端 `tsc -b` 通过
+  - build：`release-check` 内前后端构建检查通过
+  - 手工验证：`release-check` 报告目录 `.release-check/20260402-101919` 已生成且包含快照
+- **风险说明：** 若历史分支记录状态与当前代码基线不一致，可能影响发布审计可追溯性。
+- **下一步：** 合并到 `main` 后创建版本 tag（计划 `v0.2.0`）。
+
+---
+
 ## feature/label-search-scroll-keyboard-only
 
 - **用途：** 限定搜索自动滚动触发条件，仅在键盘导航时滚动活动项
@@ -709,16 +730,16 @@
   - `src/components/tag-tree.tsx`
   - `src/components/tag-detail-panel.tsx`
   - `src/components/tag-rule-panel.tsx`
-- **当前状态：** in_progress
-- **改动说明：** 已完成三栏式页面结构，包含标签树、标签详情编辑区和语义规则区域。
+- **当前状态：** abandoned
+- **改动说明：** 该条目引用的 `src/*` 旧路径在当前仓库不存在，且当前前端实现已迁移至 `frontend/src/*`；为保证发布记录一致性，本历史任务按“遗留记录”废弃处理。
 - **验证情况：**
-  - lint：未执行
-  - tests：未执行
-  - type-check：未执行
-  - build：未执行
-  - 手工验证：已完成页面结构走查
-- **风险说明：** 尚未实现拖拽调整层级与真实接口联调。
-- **下一步：** 接入 mock 数据并补充保存、发布交互。
+  - lint：不适用（历史遗留记录清理）
+  - tests：不适用
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：`Test-Path src/pages/tag-hierarchy.tsx` 等 4 个路径均不存在
+- **风险说明：** 若后续确实需要“标签层级独立页面”，需在 `frontend/src/pages` 重新立项并建立新分支记录。
+- **下一步：** 如有业务需求，按新目录结构重建对应任务分支与实现计划。
 
 ---
 
@@ -730,13 +751,13 @@
 - **基于分支：** main
 - **主要改动文件：**
   - `src/components/layout/sidebar.tsx`
-- **当前状态：** review_ready
-- **改动说明：** 调整容器高度与 overflow 行为，确保长菜单可正常滚动。
+- **当前状态：** abandoned
+- **改动说明：** 该条目指向的 `src/components/layout/sidebar.tsx` 在当前仓库不存在；当前生效侧栏位于 `frontend/src/layout/Sidebar.tsx`，本条按历史遗留记录废弃。
 - **验证情况：**
-  - lint：本地通过
+  - lint：不适用（历史遗留记录清理）
   - tests：不适用
-  - type-check：本地通过
-  - build：本地通过
-  - 手工验证：桌面端已验证
-- **风险说明：** 移动端展示仍需单独验证。
-- **下一步：** 发起 PR，待 UI 检查后合并。
+  - type-check：不适用
+  - build：不适用
+  - 手工验证：`Test-Path src/components/layout/sidebar.tsx` 不存在
+- **风险说明：** 若侧栏滚动问题在现行实现中复现，应基于 `frontend/src/layout/Sidebar.tsx` 新建 `fix/*` 分支处理。
+- **下一步：** 如出现实际问题，按当前目录结构新建修复任务并补齐回归验证。
