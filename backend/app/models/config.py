@@ -61,6 +61,66 @@ class LabelNode(Base):
     default_prompt_version: Mapped[str] = mapped_column(String(32), default="v1")
 
 
+class LabelTaxonomy(Base):
+    __tablename__ = "label_taxonomy"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    code: Mapped[str] = mapped_column(String(64), unique=True)
+    description: Mapped[str] = mapped_column(Text, default="")
+    business_scope: Mapped[list[str]] = mapped_column(JSON, default=list)
+    category_scope: Mapped[list[str]] = mapped_column(JSON, default=list)
+    owner: Mapped[str] = mapped_column(String(64), default="")
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    current_version_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    node_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    created_by: Mapped[str] = mapped_column(String(64), default="system")
+    updated_by: Mapped[str] = mapped_column(String(64), default="system")
+
+
+class LabelTaxonomyVersion(Base):
+    __tablename__ = "label_taxonomy_version"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    taxonomy_id: Mapped[str] = mapped_column(String(64), index=True)
+    version: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    change_log: Mapped[str] = mapped_column(Text, default="")
+    node_count: Mapped[int] = mapped_column(Integer, default=0)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    created_by: Mapped[str] = mapped_column(String(64), default="system")
+    updated_by: Mapped[str] = mapped_column(String(64), default="system")
+
+
+class LabelTaxonomyNode(Base):
+    __tablename__ = "label_taxonomy_node"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    taxonomy_version_id: Mapped[str] = mapped_column(String(64), index=True)
+    parent_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    name: Mapped[str] = mapped_column(String(128))
+    code: Mapped[str] = mapped_column(String(64))
+    level: Mapped[int] = mapped_column(Integer, default=1)
+    path_names: Mapped[list[str]] = mapped_column(JSON, default=list)
+    path_ids: Mapped[list[str]] = mapped_column(JSON, default=list)
+    is_leaf: Mapped[bool] = mapped_column(Boolean, default=False)
+    llm_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=1)
+    status: Mapped[str] = mapped_column(String(16), default="enabled")
+    category_scope: Mapped[list[str]] = mapped_column(JSON, default=list)
+    business_scope: Mapped[list[str]] = mapped_column(JSON, default=list)
+    remark: Mapped[str] = mapped_column(Text, default="")
+    has_config: Mapped[bool] = mapped_column(Boolean, default=False)
+    has_examples: Mapped[bool] = mapped_column(Boolean, default=False)
+    config_status: Mapped[str] = mapped_column(String(16), default="empty")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+
 class PromptConfig(Base):
     __tablename__ = "prompt_config"
 

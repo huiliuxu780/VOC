@@ -37,9 +37,9 @@
 
 ## feature/label-taxonomy-p0-shell
 
-- **用途：** 按重构实施文档落地标签体系管理 P0 前端骨架（路由、导航、列表/编辑/详情页）
+- **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）
 - **任务类型：** 功能开发
-- **关联页面/模块：** `frontend/src/app/router.tsx`、`frontend/src/layout/Sidebar.tsx`、`frontend/src/pages/*Taxonomy*`
+- **关联页面/模块：** `frontend` 标签体系页面与路由、`backend` `label-taxonomies` API 与数据模型
 - **基于分支：** main
 - **主要改动文件：**
   - `frontend/src/app/router.tsx`
@@ -53,17 +53,25 @@
   - `frontend/src/app/router.integration.dom.test.ts`
   - `frontend/src/pages/SettingsPage.tsx`
   - `frontend/src/lib/api.ts`
+  - `backend/app/api/v1/label_taxonomies.py`
+  - `backend/app/api/v1/router.py`
+  - `backend/app/models/config.py`
+  - `backend/app/models/__init__.py`
+  - `backend/app/schemas/taxonomy.py`
+  - `backend/app/schemas/__init__.py`
+  - `backend/tests/test_label_taxonomies_api.py`
+  - `backend/contracts/openapi.snapshot.json`
   - `docs/branch-log.md`
 - **当前状态：** review_ready
-- **改动说明：** 已完成标签体系管理 P0 前端壳层重构：新增 `label-taxonomies` 路由族（列表/新建/编辑/详情/节点深链），侧边栏将“标签层级管理”升级为“标签体系管理”，将“Prompt 管理”降级为“Prompt 调试中心”；新增标签体系列表页、体系表单页、三段式详情页（顶部上下文 + 左树 + 右侧 Tabs），并补充 `Tabs` / `Textarea` 基础组件与演示数据夹具，后端新 API 未接通时自动回退演示数据以保证可用展示。
+- **改动说明：** 已完成 P0 前后端闭环：前端新增标签体系 IA 与三页骨架；后端新增 `label-taxonomies` 接口族（列表/详情/创建/更新/版本详情/树数据），并补充 taxonomy/version/node 数据模型与种子数据。前端在 API 可用时优先走真实接口，仅在异常场景回退演示数据；同时更新 OpenAPI 快照和后端回归测试。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
-  - tests：`cd frontend && npm run test` 通过（10 files, 33 tests）
+  - tests：`cd frontend && npm run test` 通过（10 files, 33 tests）；`$env:PYTHONPATH='e:\My Voc\backend'; cd backend && pytest -q` 通过（9 passed）
   - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
-  - build：`cd frontend && npm run build` 通过
+  - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py` 通过（已更新 snapshot）
   - 手工验证：未执行（本轮以自动化验证为主）
-- **风险说明：** 后端新 API 尚未完全对齐时，页面数据以占位/兼容方式呈现，后续需对接真实接口。
-- **下一步：** 进入 P0 下一步：对接真实 `label-taxonomies` 系列 API，并逐步替换演示数据回退逻辑。
+- **风险说明：** 节点配置/示例/在线测试等深层接口仍是占位态，详情页部分 Tab 仍依赖演示数据展示结构。
+- **下一步：** 进入下一迭代：补齐节点配置、示例管理、测试调试 API，并将详情页 Tabs 从占位切换为真实接口读写。
 
 ---
 

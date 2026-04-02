@@ -380,6 +380,370 @@
         "title": "LabelNodeOut",
         "type": "object"
       },
+      "LabelTaxonomyIn": {
+        "properties": {
+          "businessScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessscope",
+            "type": "array"
+          },
+          "categoryScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categoryscope",
+            "type": "array"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner": {
+            "default": "",
+            "title": "Owner",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ],
+        "title": "LabelTaxonomyIn",
+        "type": "object"
+      },
+      "LabelTaxonomyNodeOut": {
+        "properties": {
+          "businessScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessscope",
+            "type": "array"
+          },
+          "categoryScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categoryscope",
+            "type": "array"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "configStatus": {
+            "default": "empty",
+            "title": "Configstatus",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "hasConfig": {
+            "default": false,
+            "title": "Hasconfig",
+            "type": "boolean"
+          },
+          "hasExamples": {
+            "default": false,
+            "title": "Hasexamples",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "isLeaf": {
+            "title": "Isleaf",
+            "type": "boolean"
+          },
+          "level": {
+            "title": "Level",
+            "type": "integer"
+          },
+          "llmEnabled": {
+            "title": "Llmenabled",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parentid"
+          },
+          "pathIds": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pathids",
+            "type": "array"
+          },
+          "pathNames": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pathnames",
+            "type": "array"
+          },
+          "remark": {
+            "default": "",
+            "title": "Remark",
+            "type": "string"
+          },
+          "sortOrder": {
+            "title": "Sortorder",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "taxonomyVersionId": {
+            "title": "Taxonomyversionid",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "taxonomyVersionId",
+          "name",
+          "code",
+          "level",
+          "isLeaf",
+          "llmEnabled",
+          "sortOrder",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LabelTaxonomyNodeOut",
+        "type": "object"
+      },
+      "LabelTaxonomyOut": {
+        "properties": {
+          "businessScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Businessscope",
+            "type": "array"
+          },
+          "categoryScope": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Categoryscope",
+            "type": "array"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "createdBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdby"
+          },
+          "currentVersionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentversionid"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nodeCount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Nodecount"
+          },
+          "owner": {
+            "default": "",
+            "title": "Owner",
+            "type": "string"
+          },
+          "status": {
+            "default": "draft",
+            "title": "Status",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          },
+          "updatedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedby"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "id",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LabelTaxonomyOut",
+        "type": "object"
+      },
+      "LabelTaxonomyVersionOut": {
+        "properties": {
+          "changeLog": {
+            "default": "",
+            "title": "Changelog",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "createdBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdby"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "nodeCount": {
+            "default": 0,
+            "title": "Nodecount",
+            "type": "integer"
+          },
+          "publishedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publishedat"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "taxonomyId": {
+            "title": "Taxonomyid",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          },
+          "updatedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedby"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "taxonomyId",
+          "version",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "LabelTaxonomyVersionOut",
+        "type": "object"
+      },
       "MappingPreviewRequest": {
         "properties": {
           "mapping_rules": {
@@ -1638,6 +2002,314 @@
         "summary": "Trigger Job",
         "tags": [
           "jobs"
+        ]
+      }
+    },
+    "/api/v1/label-taxonomies": {
+      "get": {
+        "operationId": "list_taxonomies_api_v1_label_taxonomies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelTaxonomyOut"
+                  },
+                  "title": "Response List Taxonomies Api V1 Label Taxonomies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Taxonomies",
+        "tags": [
+          "label-taxonomies"
+        ]
+      },
+      "post": {
+        "operationId": "create_taxonomy_api_v1_label_taxonomies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelTaxonomyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelTaxonomyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Taxonomy",
+        "tags": [
+          "label-taxonomies"
+        ]
+      }
+    },
+    "/api/v1/label-taxonomies/{taxonomy_id}": {
+      "get": {
+        "operationId": "get_taxonomy_api_v1_label_taxonomies__taxonomy_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taxonomy_id",
+            "required": true,
+            "schema": {
+              "title": "Taxonomy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelTaxonomyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Taxonomy",
+        "tags": [
+          "label-taxonomies"
+        ]
+      },
+      "put": {
+        "operationId": "update_taxonomy_api_v1_label_taxonomies__taxonomy_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taxonomy_id",
+            "required": true,
+            "schema": {
+              "title": "Taxonomy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelTaxonomyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelTaxonomyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Taxonomy",
+        "tags": [
+          "label-taxonomies"
+        ]
+      }
+    },
+    "/api/v1/label-taxonomies/{taxonomy_id}/versions": {
+      "get": {
+        "operationId": "list_taxonomy_versions_api_v1_label_taxonomies__taxonomy_id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taxonomy_id",
+            "required": true,
+            "schema": {
+              "title": "Taxonomy Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelTaxonomyVersionOut"
+                  },
+                  "title": "Response List Taxonomy Versions Api V1 Label Taxonomies  Taxonomy Id  Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Taxonomy Versions",
+        "tags": [
+          "label-taxonomies"
+        ]
+      }
+    },
+    "/api/v1/label-taxonomies/{taxonomy_id}/versions/{version_id}": {
+      "get": {
+        "operationId": "get_taxonomy_version_api_v1_label_taxonomies__taxonomy_id__versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taxonomy_id",
+            "required": true,
+            "schema": {
+              "title": "Taxonomy Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelTaxonomyVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Taxonomy Version",
+        "tags": [
+          "label-taxonomies"
+        ]
+      }
+    },
+    "/api/v1/label-taxonomies/{taxonomy_id}/versions/{version_id}/tree": {
+      "get": {
+        "operationId": "get_taxonomy_tree_api_v1_label_taxonomies__taxonomy_id__versions__version_id__tree_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taxonomy_id",
+            "required": true,
+            "schema": {
+              "title": "Taxonomy Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelTaxonomyNodeOut"
+                  },
+                  "title": "Response Get Taxonomy Tree Api V1 Label Taxonomies  Taxonomy Id  Versions  Version Id  Tree Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Taxonomy Tree",
+        "tags": [
+          "label-taxonomies"
         ]
       }
     },

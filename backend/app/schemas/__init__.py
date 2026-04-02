@@ -11,6 +11,7 @@ from app.schemas.label import LabelNodeIn, LabelNodeOut
 from app.schemas.monitoring import DashboardMetrics
 from app.schemas.prompt import PromptConfigIn, PromptConfigOut
 from app.schemas.settings import ModelConfigBulkUpdate, ModelConfigItem, ModelConfigUpdateItem
+from app.schemas.taxonomy import LabelTaxonomyIn, LabelTaxonomyNodeOut, LabelTaxonomyOut, LabelTaxonomyVersionOut
 
 __all__ = [
     "DataSourceCreate",
@@ -30,4 +31,8 @@ __all__ = [
     "ModelConfigItem",
     "ModelConfigUpdateItem",
     "ModelConfigBulkUpdate",
+    "LabelTaxonomyIn",
+    "LabelTaxonomyOut",
+    "LabelTaxonomyVersionOut",
+    "LabelTaxonomyNodeOut",
 ]
