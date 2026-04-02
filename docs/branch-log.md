@@ -162,6 +162,29 @@
 
 ---
 
+## refactor/taxonomy-detail-testing-section
+
+- **用途：** 将标签体系详情页 Testing 区域抽离为独立组件，继续推进详情页模块化
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/LabelTaxonomyDetailPage.tsx`、Testing 调试与记录区域
+- **基于分支：** refactor/taxonomy-detail-examples-section
+- **主要改动文件：**
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/TaxonomyNodeTestingSection.tsx`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成 Testing 组件化：将 `Debug Console` 与 `Record Explorer` 视图抽离为 `TaxonomyNodeTestingSection`，父页仅保留状态与行为函数；测试执行、筛选、翻页与结果展示逻辑保持不变。
+- **验证情况：**
+  - lint：不适用（仓库未设置前端 lint 门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 7 tests）；`cd frontend && npm run test` 通过（11 files, 40 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化回归为主）
+- **风险说明：** Testing 区域包含筛选与分页交互，若 props 绑定不完整，可能导致筛选参数或翻页行为回归。
+- **下一步：** 发起本分支 PR；若通过评审，下一切片可继续抽离 Versions 对比区为独立组件，进一步收敛详情页主文件复杂度。
+
+---
+
 ## feature/label-taxonomy-p0-shell
 
 - **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）
