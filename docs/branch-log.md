@@ -67,7 +67,7 @@
   - `frontend/src/pages/labelManagement.helpers.test.ts`
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 将搜索自动滚动的行为映射抽取为 `labelManagement.helpers.ts` 中的 `getScrollBehaviorForReducedMotion`，页面仅负责读取媒体查询结果并传入 helper，减少组件内策略逻辑耦合；同步补充 helper 单测覆盖。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -76,7 +76,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** helper 抽取若命名或边界不清晰，可能影响既有滚动分支行为稳定性。
-- **下一步：** 发起 PR 评审并合并；后续可继续把“选择来源判定”逻辑抽象为复用 hook。
+- **下一步：** 已合并到 `main`；后续可继续把“选择来源判定”逻辑抽象为复用 hook。
 
 ---
 
