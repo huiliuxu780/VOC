@@ -161,6 +161,33 @@ class LabelTaxonomyNodeExample(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 
 
+class LabelTaxonomyNodeConfigVersion(Base):
+    __tablename__ = "label_taxonomy_node_config_version"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    label_node_id: Mapped[str] = mapped_column(String(64), index=True)
+    config_id: Mapped[str] = mapped_column(String(64), index=True)
+    config_version: Mapped[str] = mapped_column(String(32), default="v1.0")
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+
+class LabelTaxonomyNodeTestRecord(Base):
+    __tablename__ = "label_taxonomy_node_test_record"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    label_node_id: Mapped[str] = mapped_column(String(64), index=True)
+    input_text: Mapped[str] = mapped_column(Text, default="")
+    raw_output: Mapped[str] = mapped_column(Text, default="")
+    parsed_output: Mapped[dict] = mapped_column(JSON, default=dict)
+    hit_label: Mapped[str] = mapped_column(String(64), default="")
+    confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    latency: Mapped[int] = mapped_column(Integer, default=0)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
+
+
 class PromptConfig(Base):
     __tablename__ = "prompt_config"
 

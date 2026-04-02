@@ -107,6 +107,10 @@ class LabelNodeExampleIn(LabelNodeExampleBase):
     pass
 
 
+class LabelNodeExampleUpdateIn(LabelNodeExampleBase):
+    pass
+
+
 class LabelNodeExampleOut(LabelNodeExampleBase):
     id: str
     labelNodeId: str
@@ -126,3 +130,19 @@ class LabelNodeTestOut(BaseModel):
     confidence: float
     latency: int
     errorMessage: str | None = None
+
+
+class LabelNodeTestRecordOut(LabelNodeTestOut):
+    id: str
+    inputText: str
+    createdAt: datetime
+
+
+class LabelNodeConfigVersionOut(BaseModel):
+    id: str
+    labelNodeId: str
+    configId: str
+    configVersion: str
+    status: str
+    snapshot: dict
+    createdAt: datetime

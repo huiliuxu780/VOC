@@ -4,13 +4,16 @@ import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/Tabs";
 import { Textarea } from "../components/ui/Textarea";
-import { apiGet, apiPost, apiPut } from "../lib/api";
+import { apiDelete, apiGet, apiPost, apiPut } from "../lib/api";
 import type {
+  LabelNodeConfigVersionRecord,
   LabelNodeConfigRecord,
   LabelNodeConfigUpsertPayload,
   LabelNodeExampleCreatePayload,
   LabelNodeExampleRecord,
+  LabelNodeExampleUpdatePayload,
   LabelNodeRecord,
+  LabelNodeTestRecord,
   LabelNodeTestResult,
   LabelTaxonomyRecord,
   LabelTaxonomyVersionRecord
@@ -114,10 +117,17 @@ export function LabelTaxonomyDetailPage() {
   const [exampleSaving, setExampleSaving] = useState(false);
   const [examples, setExamples] = useState<LabelNodeExampleRecord[]>([]);
   const [exampleDraft, setExampleDraft] = useState<LabelNodeExampleCreatePayload>(emptyExampleDraft);
+  const [editingExampleId, setEditingExampleId] = useState<string | null>(null);
+  const [editingExampleDraft, setEditingExampleDraft] = useState<LabelNodeExampleUpdatePayload>(emptyExampleDraft);
 
   const [testInput, setTestInput] = useState("Appointment delayed twice and nobody follows up.");
   const [testRunning, setTestRunning] = useState(false);
   const [testResult, setTestResult] = useState<LabelNodeTestResult | null>(null);
+  const [testRecordsLoading, setTestRecordsLoading] = useState(false);
+  const [testRecords, setTestRecords] = useState<LabelNodeTestRecord[]>([]);
+
+  const [configVersionsLoading, setConfigVersionsLoading] = useState(false);
+  const [configVersions, setConfigVersions] = useState<LabelNodeConfigVersionRecord[]>([]);
 
   const resolvedVersionId = versionId ?? defaultVersionIdForTaxonomy(taxonomyId);
 
@@ -195,12 +205,40 @@ export function LabelTaxonomyDetailPage() {
     return groups;
   }, [examples]);
 
+  async function loadConfigVersions(nodeId: string) {
+    setConfigVersionsLoading(true);
+    try {
+      const rows = await apiGet<LabelNodeConfigVersionRecord[]>(`/label-nodes/${nodeId}/config/versions`);
+      setConfigVersions(rows);
+    } catch {
+      setConfigVersions([]);
+    } finally {
+      setConfigVersionsLoading(false);
+    }
+  }
+
+  async function loadTestRecords(nodeId: string) {
+    setTestRecordsLoading(true);
+    try {
+      const rows = await apiGet<LabelNodeTestRecord[]>(`/label-nodes/${nodeId}/test-records`);
+      setTestRecords(rows);
+    } catch {
+      setTestRecords([]);
+    } finally {
+      setTestRecordsLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!selectedNodeId) {
       setNodeConfig(null);
       setConfigDraft(emptyConfigPayload);
       setExamples([]);
+      setConfigVersions([]);
+      setTestRecords([]);
       setTestResult(null);
+      setEditingExampleId(null);
+      setEditingExampleDraft(emptyExampleDraft);
       return;
     }
     const currentNodeId = selectedNodeId;
@@ -209,26 +247,38 @@ export function LabelTaxonomyDetailPage() {
     async function loadNodeDetails() {
       setConfigLoading(true);
       setExamplesLoading(true);
+      setConfigVersionsLoading(true);
+      setTestRecordsLoading(true);
       try {
-        const [config, exampleRows] = await Promise.all([
+        const [config, exampleRows, versionRows, testRecordRows] = await Promise.all([
           apiGet<LabelNodeConfigRecord>(`/label-nodes/${currentNodeId}/config`),
-          apiGet<LabelNodeExampleRecord[]>(`/label-nodes/${currentNodeId}/examples`)
+          apiGet<LabelNodeExampleRecord[]>(`/label-nodes/${currentNodeId}/examples`),
+          apiGet<LabelNodeConfigVersionRecord[]>(`/label-nodes/${currentNodeId}/config/versions`),
+          apiGet<LabelNodeTestRecord[]>(`/label-nodes/${currentNodeId}/test-records`)
         ]);
         if (!mounted) return;
         setNodeConfig(config);
         setConfigDraft(toConfigPayload(config));
         setExamples(exampleRows);
+        setConfigVersions(versionRows);
+        setTestRecords(testRecordRows);
       } catch {
         if (!mounted) return;
         const fallbackConfig = getDemoNodeConfig(currentNodeId);
         setNodeConfig(fallbackConfig);
         setConfigDraft(toConfigPayload(fallbackConfig));
         setExamples([]);
+        setConfigVersions([]);
+        setTestRecords([]);
       } finally {
         if (mounted) {
           setConfigLoading(false);
           setExamplesLoading(false);
+          setConfigVersionsLoading(false);
+          setTestRecordsLoading(false);
           setTestResult(null);
+          setEditingExampleId(null);
+          setEditingExampleDraft(emptyExampleDraft);
         }
       }
     }
@@ -266,6 +316,18 @@ export function LabelTaxonomyDetailPage() {
       const updated = await apiPut<LabelNodeConfigRecord>(`/label-nodes/${selectedNodeId}/config`, payload);
       setNodeConfig(updated);
       setConfigDraft(toConfigPayload(updated));
+      setNodes((prev) =>
+        prev.map((item) =>
+          item.id === selectedNodeId
+            ? {
+                ...item,
+                hasConfig: true,
+                configStatus: updated.status
+              }
+            : item
+        )
+      );
+      await loadConfigVersions(selectedNodeId);
       setNotice(`Saved node config for ${selectedNodeId}`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Failed to save node config");
@@ -289,10 +351,89 @@ export function LabelTaxonomyDetailPage() {
         note: exampleDraft.note.trim()
       });
       setExamples((prev) => [created, ...prev]);
+      setNodes((prev) =>
+        prev.map((item) =>
+          item.id === selectedNodeId
+            ? {
+                ...item,
+                hasExamples: true
+              }
+            : item
+        )
+      );
       setExampleDraft(emptyExampleDraft);
       setNotice(`Added example to node ${selectedNodeId}`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Failed to add example");
+    } finally {
+      setExampleSaving(false);
+    }
+  }
+
+  function startEditExample(item: LabelNodeExampleRecord) {
+    setEditingExampleId(item.id);
+    setEditingExampleDraft({
+      exampleType: item.exampleType,
+      content: item.content,
+      expectedLabel: item.expectedLabel,
+      note: item.note
+    });
+  }
+
+  function cancelEditExample() {
+    setEditingExampleId(null);
+    setEditingExampleDraft(emptyExampleDraft);
+  }
+
+  async function saveEditedExample(exampleId: string) {
+    if (!selectedNodeId) return;
+    if (!editingExampleDraft.content.trim()) {
+      setNotice("Example content is required.");
+      return;
+    }
+    setExampleSaving(true);
+    try {
+      const updated = await apiPut<LabelNodeExampleRecord>(`/label-nodes/${selectedNodeId}/examples/${exampleId}`, {
+        ...editingExampleDraft,
+        content: editingExampleDraft.content.trim(),
+        expectedLabel: editingExampleDraft.expectedLabel.trim(),
+        note: editingExampleDraft.note.trim()
+      });
+      setExamples((prev) => prev.map((item) => (item.id === exampleId ? updated : item)));
+      cancelEditExample();
+      setNotice(`Updated example ${exampleId}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Failed to update example");
+    } finally {
+      setExampleSaving(false);
+    }
+  }
+
+  async function removeExample(exampleId: string) {
+    if (!selectedNodeId) return;
+    setExampleSaving(true);
+    try {
+      await apiDelete<{ status: string; exampleId: string }>(`/label-nodes/${selectedNodeId}/examples/${exampleId}`);
+      let remainingCount = 0;
+      setExamples((prev) => {
+        const remaining = prev.filter((item) => item.id !== exampleId);
+        remainingCount = remaining.length;
+        return remaining;
+      });
+      setNodes((prev) =>
+        prev.map((item) =>
+          item.id === selectedNodeId
+            ? {
+                ...item,
+                hasExamples: remainingCount > 0
+              }
+            : item
+        )
+      );
+      if (editingExampleId === exampleId) cancelEditExample();
+      setNotice(`Deleted example ${exampleId}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Failed to delete example");
     } finally {
       setExampleSaving(false);
     }
@@ -308,6 +449,7 @@ export function LabelTaxonomyDetailPage() {
     try {
       const result = await apiPost<LabelNodeTestResult>(`/label-nodes/${selectedNodeId}/test`, { contentText: testInput.trim() });
       setTestResult(result);
+      await loadTestRecords(selectedNodeId);
       setNotice(`Test completed: ${result.hitLabel} (${Math.round(result.confidence * 100)}%)`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Node test failed");
@@ -575,10 +717,80 @@ export function LabelTaxonomyDetailPage() {
                             <div className="space-y-2">
                               {rows.map((item) => (
                                 <article key={item.id} className="rounded-md border border-white/10 bg-white/[0.02] p-2">
-                                  <p className="text-sm text-textPrimary">{item.content}</p>
-                                  <p className="mt-1 text-[11px] text-textSecondary">
-                                    expected: {item.expectedLabel || "-"} | note: {item.note || "-"}
-                                  </p>
+                                  {editingExampleId === item.id ? (
+                                    <div className="space-y-2">
+                                      <Select
+                                        value={editingExampleDraft.exampleType}
+                                        onChange={(value) =>
+                                          setEditingExampleDraft((prev) => ({
+                                            ...prev,
+                                            exampleType: value as LabelNodeExampleUpdatePayload["exampleType"]
+                                          }))
+                                        }
+                                        options={EXAMPLE_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                                      />
+                                      <Textarea
+                                        rows={3}
+                                        value={editingExampleDraft.content}
+                                        onChange={(event) => setEditingExampleDraft((prev) => ({ ...prev, content: event.target.value }))}
+                                      />
+                                      <input
+                                        value={editingExampleDraft.expectedLabel}
+                                        onChange={(event) => setEditingExampleDraft((prev) => ({ ...prev, expectedLabel: event.target.value }))}
+                                        placeholder="Expected label"
+                                        className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
+                                      />
+                                      <Textarea
+                                        rows={2}
+                                        value={editingExampleDraft.note}
+                                        onChange={(event) => setEditingExampleDraft((prev) => ({ ...prev, note: event.target.value }))}
+                                        placeholder="Note"
+                                      />
+                                      <div className="flex flex-wrap gap-2">
+                                        <button
+                                          type="button"
+                                          disabled={exampleSaving}
+                                          onClick={() => void saveEditedExample(item.id)}
+                                          className="cursor-pointer rounded-md border border-indigo-400/45 px-2 py-1 text-[11px] text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                          Save
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={exampleSaving}
+                                          onClick={cancelEditExample}
+                                          className="cursor-pointer rounded-md border border-white/20 px-2 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <p className="text-sm text-textPrimary">{item.content}</p>
+                                      <p className="mt-1 text-[11px] text-textSecondary">
+                                        expected: {item.expectedLabel || "-"} | note: {item.note || "-"}
+                                      </p>
+                                      <p className="mt-1 text-[11px] text-textSecondary">updated: {item.updatedAt}</p>
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => startEditExample(item)}
+                                          className="cursor-pointer rounded-md border border-white/20 px-2 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={exampleSaving}
+                                          onClick={() => void removeExample(item.id)}
+                                          className="cursor-pointer rounded-md border border-rose-400/45 px-2 py-1 text-[11px] text-rose-100 transition-colors hover:border-rose-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
                                 </article>
                               ))}
                             </div>
@@ -633,10 +845,46 @@ export function LabelTaxonomyDetailPage() {
                           Run test to view rawOutput / parsedOutput / hitLabel / confidence / latency / errorMessage.
                         </div>
                       )}
+
+                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                        <p className="mb-2 text-xs text-textSecondary">Recent Test Records</p>
+                        {testRecordsLoading ? <p className="text-xs text-textSecondary">Loading test records...</p> : null}
+                        {!testRecordsLoading && testRecords.length === 0 ? (
+                          <p className="text-xs text-textSecondary">No test records yet.</p>
+                        ) : null}
+                        <div className="space-y-2">
+                          {testRecords.map((record) => (
+                            <article key={record.id} className="rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textSecondary">
+                              <p>
+                                <span className="text-textPrimary">{record.hitLabel}</span> | confidence {record.confidence} | latency {record.latency}ms
+                              </p>
+                              <p>input: {record.inputText}</p>
+                              <p>at: {record.createdAt}</p>
+                            </article>
+                          ))}
+                        </div>
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="versions" className="space-y-3">
-                      <p className="text-sm text-textSecondary">Node version snapshots placeholder (P0 read-only, diff in later iteration).</p>
+                      {configVersionsLoading ? <p className="text-xs text-textSecondary">Loading config versions...</p> : null}
+                      {!configVersionsLoading && configVersions.length === 0 ? (
+                        <p className="text-sm text-textSecondary">No config versions yet.</p>
+                      ) : null}
+                      <div className="space-y-2">
+                        {configVersions.map((versionRow) => (
+                          <article key={versionRow.id} className="rounded-md border border-white/10 bg-white/[0.02] p-3 text-xs text-textSecondary">
+                            <p>
+                              version: <span className="text-textPrimary">{versionRow.configVersion}</span> | status:{" "}
+                              <span className="text-textPrimary">{versionRow.status}</span>
+                            </p>
+                            <p>createdAt: {versionRow.createdAt}</p>
+                            <pre className="mt-2 overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                              {JSON.stringify(versionRow.snapshot, null, 2)}
+                            </pre>
+                          </article>
+                        ))}
+                      </div>
                     </TabsContent>
 
                     <TabsContent value="mapping" className="space-y-3">

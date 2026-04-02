@@ -361,6 +361,8 @@ export type LabelNodeExampleCreatePayload = {
   note: string;
 };
 
+export type LabelNodeExampleUpdatePayload = LabelNodeExampleCreatePayload;
+
 export type LabelNodeTestPayload = {
   contentText: string;
 };
@@ -373,4 +375,20 @@ export type LabelNodeTestResult = {
   confidence: number;
   latency: number;
   errorMessage?: string | null;
+};
+
+export type LabelNodeTestRecord = LabelNodeTestResult & {
+  id: string;
+  inputText: string;
+  createdAt: string;
+};
+
+export type LabelNodeConfigVersionRecord = {
+  id: string;
+  labelNodeId: string;
+  configId: string;
+  configVersion: string;
+  status: "draft" | "published";
+  snapshot: Record<string, unknown>;
+  createdAt: string;
 };

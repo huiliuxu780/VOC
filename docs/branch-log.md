@@ -56,7 +56,7 @@
   - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
   - `docs/branch-log.md`
 - **当前状态：** review_ready
-- **改动说明：** 已新增 `label-nodes` 维度接口：配置读取/保存、示例读取/新增、在线测试；并新增节点配置/示例数据模型与 schema。前端详情页已将 Rule/Examples/Testing 三个 Tab 切换为真实 API 驱动：可保存/发布节点配置、可新增并分组展示示例、可在线测试并展示 `rawOutput/parsedOutput/hitLabel/confidence/latency/errorMessage`。
+- **改动说明：** 已完成第二阶段扩展：后端新增示例编辑/删除、测试记录查询、配置版本历史接口，并新增配置版本与测试记录数据模型；前端详情页 `Examples / Testing / Versions` 三个 Tab 已接入真实接口（示例可编辑/删除、测试记录可查看、配置版本快照可查看）。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
   - tests：`$env:PYTHONPATH='e:\My Voc\backend'; cd backend && pytest -q` 通过（12 passed）；`cd frontend && npm run test` 通过（10 files, 33 tests）
@@ -64,7 +64,7 @@
   - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py` 通过（snapshot 已更新）
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 接口模型仍属第一版，若后续字段口径调整，需要同步迁移前端状态映射。
-- **下一步：** 继续补齐示例编辑/删除、测试记录查询与节点配置版本历史接口，并在前端版本 Tab 接入真实数据。
+- **下一步：** 可继续扩展节点配置版本对比（diff）与测试记录分页筛选，并补充对应 DOM/集成测试覆盖。
 
 ---
 

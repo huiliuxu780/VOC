@@ -481,6 +481,51 @@
         "title": "LabelNodeConfigOut",
         "type": "object"
       },
+      "LabelNodeConfigVersionOut": {
+        "properties": {
+          "configId": {
+            "title": "Configid",
+            "type": "string"
+          },
+          "configVersion": {
+            "title": "Configversion",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "labelNodeId": {
+            "title": "Labelnodeid",
+            "type": "string"
+          },
+          "snapshot": {
+            "additionalProperties": true,
+            "title": "Snapshot",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "labelNodeId",
+          "configId",
+          "configVersion",
+          "status",
+          "snapshot",
+          "createdAt"
+        ],
+        "title": "LabelNodeConfigVersionOut",
+        "type": "object"
+      },
       "LabelNodeExampleIn": {
         "properties": {
           "content": {
@@ -557,6 +602,34 @@
           "updatedAt"
         ],
         "title": "LabelNodeExampleOut",
+        "type": "object"
+      },
+      "LabelNodeExampleUpdateIn": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "exampleType": {
+            "default": "positive",
+            "title": "Exampletype",
+            "type": "string"
+          },
+          "expectedLabel": {
+            "default": "",
+            "title": "Expectedlabel",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "LabelNodeExampleUpdateIn",
         "type": "object"
       },
       "LabelNodeIn": {
@@ -737,6 +810,72 @@
           "latency"
         ],
         "title": "LabelNodeTestOut",
+        "type": "object"
+      },
+      "LabelNodeTestRecordOut": {
+        "properties": {
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "errorMessage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Errormessage"
+          },
+          "hitLabel": {
+            "title": "Hitlabel",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inputText": {
+            "title": "Inputtext",
+            "type": "string"
+          },
+          "latency": {
+            "title": "Latency",
+            "type": "integer"
+          },
+          "nodeId": {
+            "title": "Nodeid",
+            "type": "string"
+          },
+          "parsedOutput": {
+            "additionalProperties": true,
+            "title": "Parsedoutput",
+            "type": "object"
+          },
+          "rawOutput": {
+            "title": "Rawoutput",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodeId",
+          "rawOutput",
+          "parsedOutput",
+          "hitLabel",
+          "confidence",
+          "latency",
+          "id",
+          "inputText",
+          "createdAt"
+        ],
+        "title": "LabelNodeTestRecordOut",
         "type": "object"
       },
       "LabelTaxonomyIn": {
@@ -2456,6 +2595,52 @@
         ]
       }
     },
+    "/api/v1/label-nodes/{node_id}/config/versions": {
+      "get": {
+        "operationId": "list_node_config_versions_api_v1_label_nodes__node_id__config_versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelNodeConfigVersionOut"
+                  },
+                  "title": "Response List Node Config Versions Api V1 Label Nodes  Node Id  Config Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Node Config Versions",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
     "/api/v1/label-nodes/{node_id}/examples": {
       "get": {
         "operationId": "list_node_examples_api_v1_label_nodes__node_id__examples_get",
@@ -2552,6 +2737,118 @@
         ]
       }
     },
+    "/api/v1/label-nodes/{node_id}/examples/{example_id}": {
+      "delete": {
+        "operationId": "delete_node_example_api_v1_label_nodes__node_id__examples__example_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "example_id",
+            "required": true,
+            "schema": {
+              "title": "Example Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Node Example Api V1 Label Nodes  Node Id  Examples  Example Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Node Example",
+        "tags": [
+          "label-nodes"
+        ]
+      },
+      "put": {
+        "operationId": "update_node_example_api_v1_label_nodes__node_id__examples__example_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "example_id",
+            "required": true,
+            "schema": {
+              "title": "Example Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelNodeExampleUpdateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeExampleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Node Example",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
     "/api/v1/label-nodes/{node_id}/test": {
       "post": {
         "operationId": "run_node_test_api_v1_label_nodes__node_id__test_post",
@@ -2599,6 +2896,64 @@
           }
         },
         "summary": "Run Node Test",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
+    "/api/v1/label-nodes/{node_id}/test-records": {
+      "get": {
+        "operationId": "list_node_test_records_api_v1_label_nodes__node_id__test_records_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/LabelNodeTestRecordOut"
+                  },
+                  "title": "Response List Node Test Records Api V1 Label Nodes  Node Id  Test Records Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Node Test Records",
         "tags": [
           "label-nodes"
         ]
