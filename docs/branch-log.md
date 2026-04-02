@@ -45,7 +45,7 @@
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `frontend/src/pages/LabelManagementPage.dom.test.ts`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 已补充搜索区可见键盘提示文案，并完善输入框与结果列表 ARIA 关联：`role=combobox`、`aria-controls`、`aria-describedby`、`aria-activedescendant`，以及结果区 `role=listbox` / 选项 `role=option` + `aria-selected`。同步新增 DOM 回归用例校验提示文案与语义关联随键盘导航更新。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -54,7 +54,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 若 ARIA 关联 id 不稳定，可能引发可访问性语义失效或测试脆弱。
-- **下一步：** 提交并发起评审，确认后可合并到 `main` 进入下一轮重构迭代。
+- **下一步：** 已合并到 `main`，等待下一轮重构需求并按任务拆分新分支推进。
 
 ---
 
