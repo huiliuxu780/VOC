@@ -56,6 +56,30 @@
 
 ---
 
+## refactor/label-scroll-behavior-helper
+
+- **用途：** 抽取搜索自动滚动策略 helper，降低页面组件内策略判断复杂度
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/labelManagement.helpers.ts`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/labelManagement.helpers.ts`
+  - `frontend/src/pages/labelManagement.helpers.test.ts`
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 将搜索自动滚动的行为映射抽取为 `labelManagement.helpers.ts` 中的 `getScrollBehaviorForReducedMotion`，页面仅负责读取媒体查询结果并传入 helper，减少组件内策略逻辑耦合；同步补充 helper 单测覆盖。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/labelManagement.helpers.test.ts src/pages/LabelManagementPage.dom.test.ts` 通过（2 files, 14 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** helper 抽取若命名或边界不清晰，可能影响既有滚动分支行为稳定性。
+- **下一步：** 发起 PR 评审并合并；后续可继续把“选择来源判定”逻辑抽象为复用 hook。
+
+---
+
 ## feature/label-search-reduced-motion-scroll
 
 - **用途：** 兼顾可访问性，在 `prefers-reduced-motion` 场景下降级搜索自动滚动动画

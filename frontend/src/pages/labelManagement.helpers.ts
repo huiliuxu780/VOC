@@ -7,6 +7,10 @@ export type HighlightPart = {
   matched: boolean;
 };
 
+export function getScrollBehaviorForReducedMotion(prefersReducedMotion: boolean): ScrollBehavior {
+  return prefersReducedMotion ? "auto" : "smooth";
+}
+
 export function filterLabels(labels: LabelRecord[], searchText: string, levelFilter: LevelFilter): LabelRecord[] {
   const keyword = searchText.trim().toLowerCase();
   return labels.filter((item) => {

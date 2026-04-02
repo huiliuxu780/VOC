@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { LabelRecord } from "../lib/api";
-import { filterLabels, splitHighlightParts } from "./labelManagement.helpers";
+import { filterLabels, getScrollBehaviorForReducedMotion, splitHighlightParts } from "./labelManagement.helpers";
 
 const labels: LabelRecord[] = [
   {
@@ -56,5 +56,10 @@ describe("labelManagement helpers", () => {
   it("returns plain text part when search keyword is empty or not found", () => {
     expect(splitHighlightParts("Root Service", "")).toEqual([{ text: "Root Service", matched: false }]);
     expect(splitHighlightParts("Root Service", "xyz")).toEqual([{ text: "Root Service", matched: false }]);
+  });
+
+  it("maps reduced-motion preference to scroll behavior", () => {
+    expect(getScrollBehaviorForReducedMotion(false)).toBe("smooth");
+    expect(getScrollBehaviorForReducedMotion(true)).toBe("auto");
   });
 });

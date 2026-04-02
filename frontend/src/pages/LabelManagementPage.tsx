@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Panel } from "../components/ui/Panel";
 import { Select } from "../components/ui/Select";
 import { apiDelete, apiGet, apiPost, apiPut, LabelRecord, LabelUpsertPayload } from "../lib/api";
-import { filterLabels, LevelFilter, splitHighlightParts } from "./labelManagement.helpers";
+import { filterLabels, getScrollBehaviorForReducedMotion, LevelFilter, splitHighlightParts } from "./labelManagement.helpers";
 
 type LabelFormValues = {
   category_id: number;
@@ -46,13 +46,6 @@ function renderHighlightedText(text: string, searchText: string, keyPrefix: stri
       </mark>
     );
   });
-}
-
-function getPreferredScrollBehavior(): ScrollBehavior {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-    return "smooth";
-  }
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 }
 
 export function LabelManagementPage() {
@@ -217,7 +210,14 @@ export function LabelManagementPage() {
     if (!hasSearchText || selectedLabelId === null) return;
     if (!filteredLabels.some((item) => item.id === selectedLabelId)) return;
     const activeButton = labelButtonRefs.current[selectedLabelId];
-    activeButton?.scrollIntoView({ block: "nearest", behavior: getPreferredScrollBehavior() });
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    activeButton?.scrollIntoView({
+      block: "nearest",
+      behavior: getScrollBehaviorForReducedMotion(prefersReducedMotion)
+    });
     searchSelectionSourceRef.current = null;
   }, [hasSearchText, selectedLabelId, filteredLabels]);
 
