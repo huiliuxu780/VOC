@@ -92,6 +92,29 @@
 
 ---
 
+## refactor/taxonomy-detail-workspace-layout
+
+- **用途：** 对标签体系详情页做低风险页面结构重构，明确导航区/编辑区/调试区信息架构
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/LabelTaxonomyDetailPage.tsx`、`frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
+- **基于分支：** refactor/taxonomy-detail-compare-states
+- **主要改动文件：**
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成最小结构重构切片：将 `Testing` 重组为 `Debug Console` 与 `Record Explorer` 双区，将 `Versions` 重组为 `Compare Workspace` 与 `Version Timeline` 双区；保持原有接口与交互逻辑不变，仅优化信息层级和阅读路径。同步新增 DOM 回归用例覆盖新分区标题，防止后续结构退化。
+- **验证情况：**
+  - lint：不适用（仓库未设置前端 lint 门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 6 tests）；`cd frontend && npm run test` 通过（11 files, 39 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化回归为主）
+- **风险说明：** 结构重排若破坏现有语义层级，可能影响既有 DOM 测试稳定性与移动端可读性。
+- **下一步：** 发起该分支 PR 进行结构评审；若确认方向，下一切片可继续抽离页内“节点编辑字段区”为独立组件，进一步降低详情页单文件复杂度。
+
+---
+
 ## feature/label-taxonomy-p0-shell
 
 - **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）

@@ -356,6 +356,48 @@ describe("LabelTaxonomyDetailPage DOM interactions", () => {
     await unmount();
   });
 
+  it("renders workspace layout sections for testing and versions tabs", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/label-taxonomies") return taxonomyRows;
+      if (path === "/label-taxonomies/tax-1") return taxonomyRows[0];
+      if (path === "/label-taxonomies/tax-1/versions") return versionRows;
+      if (path === "/label-taxonomies/tax-1/versions/ver-1") return versionRows[0];
+      if (path === "/label-taxonomies/tax-1/versions/ver-1/tree") return treeRows;
+      if (path === "/label-nodes/node-install-delay/config") return nodeConfig;
+      if (path === "/label-nodes/node-install-delay/examples") return [];
+      if (path === "/label-nodes/node-install-delay/config/versions") return configVersions;
+      if (path === "/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv1&toVersionId=cfgv2") return diffResult;
+      if (path === "/label-nodes/node-install-delay/test-records?offset=0&limit=10") {
+        return {
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 10,
+          hasMore: false
+        } satisfies LabelNodeTestRecordPage;
+      }
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createRouter();
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await clickElement(findButtonByText(container, "Testing"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("Debug Console");
+      expect(container.textContent).toContain("Record Explorer");
+    });
+
+    await clickElement(findButtonByText(container, "Versions"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("Compare Workspace");
+      expect(container.textContent).toContain("Version Timeline");
+    });
+
+    await unmount();
+  });
+
   it("shows empty state when current node has no config versions", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockImplementation(async (path: string) => {

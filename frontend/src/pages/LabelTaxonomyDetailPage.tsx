@@ -970,121 +970,135 @@ export function LabelTaxonomyDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="testing" className="space-y-3">
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>Testing Input</span>
-                        <Textarea rows={4} value={testInput} onChange={(event) => setTestInput(event.target.value)} />
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={testRunning}
-                          onClick={() => void runNodeTest()}
-                          className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {testRunning ? "Running..." : "Run Test"}
-                        </button>
-                      </div>
-
-                      {testResult ? (
-                        <div className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3 text-xs text-textSecondary">
-                          <p>
-                            hitLabel: <span className="text-textPrimary">{testResult.hitLabel}</span>
-                          </p>
-                          <p>
-                            confidence: <span className="text-textPrimary">{testResult.confidence}</span> | latency:{" "}
-                            <span className="text-textPrimary">{testResult.latency}ms</span>
-                          </p>
-                          <p>
-                            errorMessage: <span className="text-textPrimary">{testResult.errorMessage ?? "-"}</span>
-                          </p>
-                          <div>
-                            <p className="mb-1">parsedOutput:</p>
-                            <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
-                              {JSON.stringify(testResult.parsedOutput, null, 2)}
-                            </pre>
+                      <div className="grid gap-3 xl:grid-cols-2">
+                        <section className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                          <div className="space-y-1">
+                            <p className="text-xs uppercase tracking-wide text-textSecondary">Debug Console</p>
+                            <p className="text-[11px] text-textSecondary">Run one-shot inference and inspect model outputs before release.</p>
                           </div>
-                          <div>
-                            <p className="mb-1">rawOutput:</p>
-                            <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
-                              {testResult.rawOutput}
-                            </pre>
+                          <label className="space-y-1 text-xs text-textSecondary">
+                            <span>Testing Input</span>
+                            <Textarea rows={4} value={testInput} onChange={(event) => setTestInput(event.target.value)} />
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              disabled={testRunning}
+                              onClick={() => void runNodeTest()}
+                              className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {testRunning ? "Running..." : "Run Test"}
+                            </button>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="rounded-lg border border-dashed border-white/20 p-3 text-xs text-textSecondary">
-                          Run test to view rawOutput / parsedOutput / hitLabel / confidence / latency / errorMessage.
-                        </div>
-                      )}
 
-                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                        <p className="mb-2 text-xs text-textSecondary">Record Filters</p>
-                        <div className="grid gap-2 md:grid-cols-[180px_1fr_auto_auto]">
-                          <Select value={testRecordHitLabel} onChange={setTestRecordHitLabel} options={testRecordHitLabelOptions} />
-                          <input
-                            value={testRecordKeyword}
-                            onChange={(event) => setTestRecordKeyword(event.target.value)}
-                            placeholder="Search input / label / output..."
-                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
-                          />
-                          <button
-                            type="button"
-                            disabled={testRecordsLoading}
-                            onClick={() => void applyTestRecordFilters()}
-                            className="cursor-pointer rounded-lg border border-indigo-400/45 px-3 py-1.5 text-xs text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Apply
-                          </button>
-                          <button
-                            type="button"
-                            disabled={testRecordsLoading}
-                            onClick={() => void resetTestRecordFilters()}
-                            className="cursor-pointer rounded-lg border border-white/20 px-3 py-1.5 text-xs text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Reset
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs text-textSecondary">Recent Test Records</p>
-                          <p className="text-[11px] text-textSecondary">
-                            Showing {testRecordTotal === 0 ? 0 : testRecordOffset + 1}-{testRecordOffset + testRecords.length} / {testRecordTotal}
-                          </p>
-                        </div>
-                        {testRecordsLoading ? <p className="text-xs text-textSecondary">Loading test records...</p> : null}
-                        {!testRecordsLoading && testRecords.length === 0 ? (
-                          <p className="text-xs text-textSecondary">No test records yet.</p>
-                        ) : null}
-                        <div className="space-y-2">
-                          {testRecords.map((record) => (
-                            <article key={record.id} className="rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textSecondary">
+                          {testResult ? (
+                            <div className="space-y-2 rounded-lg border border-white/10 bg-black/25 p-3 text-xs text-textSecondary">
                               <p>
-                                <span className="text-textPrimary">{record.hitLabel}</span> | confidence {record.confidence} | latency {record.latency}ms
+                                hitLabel: <span className="text-textPrimary">{testResult.hitLabel}</span>
                               </p>
-                              <p>input: {record.inputText}</p>
-                              <p>at: {record.createdAt}</p>
-                            </article>
-                          ))}
-                        </div>
-                        <div className="mt-3 flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            disabled={testRecordsLoading || testRecordOffset <= 0}
-                            onClick={() => void goToPreviousTestRecordPage()}
-                            className="cursor-pointer rounded-md border border-white/20 px-2.5 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Previous
-                          </button>
-                          <button
-                            type="button"
-                            disabled={testRecordsLoading || !testRecordHasMore}
-                            onClick={() => void goToNextTestRecordPage()}
-                            className="cursor-pointer rounded-md border border-indigo-400/45 px-2.5 py-1 text-[11px] text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            Next
-                          </button>
-                        </div>
+                              <p>
+                                confidence: <span className="text-textPrimary">{testResult.confidence}</span> | latency:{" "}
+                                <span className="text-textPrimary">{testResult.latency}ms</span>
+                              </p>
+                              <p>
+                                errorMessage: <span className="text-textPrimary">{testResult.errorMessage ?? "-"}</span>
+                              </p>
+                              <div>
+                                <p className="mb-1">parsedOutput:</p>
+                                <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                                  {JSON.stringify(testResult.parsedOutput, null, 2)}
+                                </pre>
+                              </div>
+                              <div>
+                                <p className="mb-1">rawOutput:</p>
+                                <pre className="overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                                  {testResult.rawOutput}
+                                </pre>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="rounded-lg border border-dashed border-white/20 p-3 text-xs text-textSecondary">
+                              Run test to view rawOutput / parsedOutput / hitLabel / confidence / latency / errorMessage.
+                            </div>
+                          )}
+                        </section>
+
+                        <section className="space-y-3 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                          <div className="space-y-1">
+                            <p className="text-xs uppercase tracking-wide text-textSecondary">Record Explorer</p>
+                            <p className="text-[11px] text-textSecondary">Filter and paginate historical test records for quick regression checks.</p>
+                          </div>
+                          <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                            <p className="mb-2 text-xs text-textSecondary">Record Filters</p>
+                            <div className="grid gap-2 md:grid-cols-[180px_1fr_auto_auto]">
+                              <Select value={testRecordHitLabel} onChange={setTestRecordHitLabel} options={testRecordHitLabelOptions} />
+                              <input
+                                value={testRecordKeyword}
+                                onChange={(event) => setTestRecordKeyword(event.target.value)}
+                                placeholder="Search input / label / output..."
+                                className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors placeholder:text-textSecondary focus:border-indigo-300/60"
+                              />
+                              <button
+                                type="button"
+                                disabled={testRecordsLoading}
+                                onClick={() => void applyTestRecordFilters()}
+                                className="cursor-pointer rounded-lg border border-indigo-400/45 px-3 py-1.5 text-xs text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Apply
+                              </button>
+                              <button
+                                type="button"
+                                disabled={testRecordsLoading}
+                                onClick={() => void resetTestRecordFilters()}
+                                className="cursor-pointer rounded-lg border border-white/20 px-3 py-1.5 text-xs text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Reset
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-xs text-textSecondary">Recent Test Records</p>
+                              <p className="text-[11px] text-textSecondary">
+                                Showing {testRecordTotal === 0 ? 0 : testRecordOffset + 1}-{testRecordOffset + testRecords.length} / {testRecordTotal}
+                              </p>
+                            </div>
+                            {testRecordsLoading ? <p className="text-xs text-textSecondary">Loading test records...</p> : null}
+                            {!testRecordsLoading && testRecords.length === 0 ? (
+                              <p className="text-xs text-textSecondary">No test records yet.</p>
+                            ) : null}
+                            <div className="space-y-2">
+                              {testRecords.map((record) => (
+                                <article key={record.id} className="rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textSecondary">
+                                  <p>
+                                    <span className="text-textPrimary">{record.hitLabel}</span> | confidence {record.confidence} | latency {record.latency}ms
+                                  </p>
+                                  <p>input: {record.inputText}</p>
+                                  <p>at: {record.createdAt}</p>
+                                </article>
+                              ))}
+                            </div>
+                            <div className="mt-3 flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                disabled={testRecordsLoading || testRecordOffset <= 0}
+                                onClick={() => void goToPreviousTestRecordPage()}
+                                className="cursor-pointer rounded-md border border-white/20 px-2.5 py-1 text-[11px] text-textSecondary transition-colors hover:border-white/35 hover:text-textPrimary disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Previous
+                              </button>
+                              <button
+                                type="button"
+                                disabled={testRecordsLoading || !testRecordHasMore}
+                                onClick={() => void goToNextTestRecordPage()}
+                                className="cursor-pointer rounded-md border border-indigo-400/45 px-2.5 py-1 text-[11px] text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
+                        </section>
                       </div>
                     </TabsContent>
 
@@ -1093,79 +1107,96 @@ export function LabelTaxonomyDetailPage() {
                       {!configVersionsLoading && configVersions.length === 0 ? (
                         <p className="text-sm text-textSecondary">No config versions yet.</p>
                       ) : null}
-                      {configVersions.length >= 2 ? (
-                        <div className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
-                          <p className="text-xs text-textSecondary">Compare Config Versions</p>
-                          <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
-                            <label className="space-y-1 text-xs text-textSecondary">
-                              <span>From</span>
-                              <Select
-                                value={compareFromVersionId}
-                                onChange={setCompareFromVersionId}
-                                ariaLabel="Compare from version"
-                                options={configVersions.map((item) => ({
-                                  value: item.id,
-                                  label: `${item.configVersion} | ${item.status}`
-                                }))}
-                              />
-                            </label>
-                            <label className="space-y-1 text-xs text-textSecondary">
-                              <span>To</span>
-                              <Select
-                                value={compareToVersionId}
-                                onChange={setCompareToVersionId}
-                                ariaLabel="Compare to version"
-                                options={configVersions.map((item) => ({
-                                  value: item.id,
-                                  label: `${item.configVersion} | ${item.status}`
-                                }))}
-                              />
-                            </label>
-                            <div className="flex items-end">
-                              <button
-                                type="button"
-                                disabled={versionDiffLoading || !compareFromVersionId || !compareToVersionId || compareSelectionInvalid}
-                                onClick={() => void compareSelectedVersions()}
-                                className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Compare
-                              </button>
-                            </div>
+                      <div className="grid gap-3 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+                        <section className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                          <div className="space-y-1">
+                            <p className="text-xs uppercase tracking-wide text-textSecondary">Compare Workspace</p>
+                            <p className="text-[11px] text-textSecondary">Validate field-level changes before promoting a config version.</p>
                           </div>
-                          {versionDiffLoading ? <p className="text-xs text-textSecondary">Loading version diff...</p> : null}
-                          {!versionDiffLoading && compareSelectionInvalid ? (
-                            <p className="text-xs text-amber-200">Please select two different versions to compare.</p>
-                          ) : null}
-                          {!versionDiffLoading && versionDiffError ? <p className="text-xs text-rose-200">{versionDiffError}</p> : null}
-                          {!versionDiffLoading && versionDiff && versionDiff.changes.length === 0 ? (
-                            <p className="text-xs text-textSecondary">No field differences found.</p>
-                          ) : null}
-                          {!versionDiffLoading && versionDiff && versionDiff.changes.length > 0 ? (
-                            <div className="space-y-1">
-                              {versionDiff.changes.map((item) => (
-                                <article key={item.field} className="rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textSecondary">
-                                  <p className="text-textPrimary">{item.field}</p>
-                                  <p>from: {diffValueToText(item.fromValue)}</p>
-                                  <p>to: {diffValueToText(item.toValue)}</p>
-                                </article>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      <div className="space-y-2">
-                        {configVersions.map((versionRow) => (
-                          <article key={versionRow.id} className="rounded-md border border-white/10 bg-white/[0.02] p-3 text-xs text-textSecondary">
-                            <p>
-                              version: <span className="text-textPrimary">{versionRow.configVersion}</span> | status:{" "}
-                              <span className="text-textPrimary">{versionRow.status}</span>
-                            </p>
-                            <p>createdAt: {versionRow.createdAt}</p>
-                            <pre className="mt-2 overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
-                              {JSON.stringify(versionRow.snapshot, null, 2)}
-                            </pre>
-                          </article>
-                        ))}
+                          {configVersions.length >= 2 ? (
+                            <>
+                              <p className="text-xs text-textSecondary">Compare Config Versions</p>
+                              <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                                <label className="space-y-1 text-xs text-textSecondary">
+                                  <span>From</span>
+                                  <Select
+                                    value={compareFromVersionId}
+                                    onChange={setCompareFromVersionId}
+                                    ariaLabel="Compare from version"
+                                    options={configVersions.map((item) => ({
+                                      value: item.id,
+                                      label: `${item.configVersion} | ${item.status}`
+                                    }))}
+                                  />
+                                </label>
+                                <label className="space-y-1 text-xs text-textSecondary">
+                                  <span>To</span>
+                                  <Select
+                                    value={compareToVersionId}
+                                    onChange={setCompareToVersionId}
+                                    ariaLabel="Compare to version"
+                                    options={configVersions.map((item) => ({
+                                      value: item.id,
+                                      label: `${item.configVersion} | ${item.status}`
+                                    }))}
+                                  />
+                                </label>
+                                <div className="flex items-end">
+                                  <button
+                                    type="button"
+                                    disabled={versionDiffLoading || !compareFromVersionId || !compareToVersionId || compareSelectionInvalid}
+                                    onClick={() => void compareSelectedVersions()}
+                                    className="cursor-pointer rounded-lg border border-cyan-400/45 px-3 py-1.5 text-xs text-cyan-100 transition-colors hover:border-cyan-300/65 disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    Compare
+                                  </button>
+                                </div>
+                              </div>
+                              {versionDiffLoading ? <p className="text-xs text-textSecondary">Loading version diff...</p> : null}
+                              {!versionDiffLoading && compareSelectionInvalid ? (
+                                <p className="text-xs text-amber-200">Please select two different versions to compare.</p>
+                              ) : null}
+                              {!versionDiffLoading && versionDiffError ? <p className="text-xs text-rose-200">{versionDiffError}</p> : null}
+                              {!versionDiffLoading && versionDiff && versionDiff.changes.length === 0 ? (
+                                <p className="text-xs text-textSecondary">No field differences found.</p>
+                              ) : null}
+                              {!versionDiffLoading && versionDiff && versionDiff.changes.length > 0 ? (
+                                <div className="space-y-1">
+                                  {versionDiff.changes.map((item) => (
+                                    <article key={item.field} className="rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textSecondary">
+                                      <p className="text-textPrimary">{item.field}</p>
+                                      <p>from: {diffValueToText(item.fromValue)}</p>
+                                      <p>to: {diffValueToText(item.toValue)}</p>
+                                    </article>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </>
+                          ) : (
+                            <p className="text-xs text-textSecondary">At least 2 config versions are required before compare is available.</p>
+                          )}
+                        </section>
+
+                        <section className="space-y-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
+                          <div className="space-y-1">
+                            <p className="text-xs uppercase tracking-wide text-textSecondary">Version Timeline</p>
+                            <p className="text-[11px] text-textSecondary">Browse snapshot history with status and payload details.</p>
+                          </div>
+                          <div className="space-y-2">
+                            {configVersions.map((versionRow) => (
+                              <article key={versionRow.id} className="rounded-md border border-white/10 bg-black/20 p-3 text-xs text-textSecondary">
+                                <p>
+                                  version: <span className="text-textPrimary">{versionRow.configVersion}</span> | status:{" "}
+                                  <span className="text-textPrimary">{versionRow.status}</span>
+                                </p>
+                                <p>createdAt: {versionRow.createdAt}</p>
+                                <pre className="mt-2 overflow-auto rounded-md border border-white/10 bg-black/25 p-2 text-[11px] text-textPrimary">
+                                  {JSON.stringify(versionRow.snapshot, null, 2)}
+                                </pre>
+                              </article>
+                            ))}
+                          </div>
+                        </section>
                       </div>
                     </TabsContent>
 
