@@ -43,7 +43,7 @@
 - **基于分支：** main
 - **主要改动文件：**
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 已将两条历史遗留分支记录（`feature/tag-hierarchy-page`、`fix/sidebar-scroll-clipping`）按当前代码基线回写为 `abandoned`，并补充原因；已执行发布检查脚本并通过。
 - **验证情况：**
   - lint：不适用
@@ -52,7 +52,7 @@
   - build：`release-check` 内前后端构建检查通过
   - 手工验证：`release-check` 报告目录 `.release-check/20260402-101919` 已生成且包含快照
 - **风险说明：** 若历史分支记录状态与当前代码基线不一致，可能影响发布审计可追溯性。
-- **下一步：** 合并到 `main` 后创建版本 tag（计划 `v0.2.0`）。
+- **下一步：** 已合并到 `main`；继续执行版本标签与发布说明草稿固化。
 
 ---
 
