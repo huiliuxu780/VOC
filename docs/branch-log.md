@@ -56,15 +56,15 @@
   - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
   - `docs/branch-log.md`
 - **当前状态：** review_ready
-- **改动说明：** 已完成第二阶段扩展：后端新增示例编辑/删除、测试记录查询、配置版本历史接口，并新增配置版本与测试记录数据模型；前端详情页 `Examples / Testing / Versions` 三个 Tab 已接入真实接口（示例可编辑/删除、测试记录可查看、配置版本快照可查看）。
+- **改动说明：** 已完成第三阶段扩展：后端新增配置版本 compare 接口、测试记录分页/筛选接口，前端详情页补齐 `Versions` 对比面板与 `Testing` 过滤/翻页交互，并完成接口与类型对齐。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
-  - tests：`$env:PYTHONPATH='e:\My Voc\backend'; cd backend && pytest -q` 通过（12 passed）；`cd frontend && npm run test` 通过（10 files, 33 tests）
+  - tests：`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests/test_label_nodes_api.py` 通过（3 passed）；`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests` 通过（12 passed）；`cd frontend && npm run test` 通过（10 files, 33 tests）
   - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
-  - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py` 通过（snapshot 已更新）
+  - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py --update` 已执行并更新快照；`python backend/scripts/check_openapi_snapshot.py` 再次校验通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 接口模型仍属第一版，若后续字段口径调整，需要同步迁移前端状态映射。
-- **下一步：** 可继续扩展节点配置版本对比（diff）与测试记录分页筛选，并补充对应 DOM/集成测试覆盖。
+- **下一步：** 发起本分支 PR，等待评审后按发布节奏合并。
 
 ---
 

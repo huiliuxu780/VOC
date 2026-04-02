@@ -392,3 +392,23 @@ export type LabelNodeConfigVersionRecord = {
   snapshot: Record<string, unknown>;
   createdAt: string;
 };
+
+export type LabelNodeConfigVersionDiffItem = {
+  field: string;
+  fromValue: unknown;
+  toValue: unknown;
+};
+
+export type LabelNodeConfigVersionDiffRecord = {
+  fromVersionId: string;
+  toVersionId: string;
+  changes: LabelNodeConfigVersionDiffItem[];
+};
+
+export type LabelNodeTestRecordPage = {
+  items: LabelNodeTestRecord[];
+  total: number;
+  offset: number;
+  limit: number;
+  hasMore: boolean;
+};

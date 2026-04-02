@@ -263,6 +263,27 @@
         "title": "LabelMoveIn",
         "type": "object"
       },
+      "LabelNodeConfigDiffItem": {
+        "properties": {
+          "field": {
+            "title": "Field",
+            "type": "string"
+          },
+          "fromValue": {
+            "title": "Fromvalue"
+          },
+          "toValue": {
+            "title": "Tovalue"
+          }
+        },
+        "required": [
+          "field",
+          "fromValue",
+          "toValue"
+        ],
+        "title": "LabelNodeConfigDiffItem",
+        "type": "object"
+      },
       "LabelNodeConfigIn": {
         "properties": {
           "decisionRule": {
@@ -479,6 +500,31 @@
           "updatedAt"
         ],
         "title": "LabelNodeConfigOut",
+        "type": "object"
+      },
+      "LabelNodeConfigVersionDiffOut": {
+        "properties": {
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/LabelNodeConfigDiffItem"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "fromVersionId": {
+            "title": "Fromversionid",
+            "type": "string"
+          },
+          "toVersionId": {
+            "title": "Toversionid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fromVersionId",
+          "toVersionId"
+        ],
+        "title": "LabelNodeConfigVersionDiffOut",
         "type": "object"
       },
       "LabelNodeConfigVersionOut": {
@@ -876,6 +922,42 @@
           "createdAt"
         ],
         "title": "LabelNodeTestRecordOut",
+        "type": "object"
+      },
+      "LabelNodeTestRecordPageOut": {
+        "properties": {
+          "hasMore": {
+            "title": "Hasmore",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LabelNodeTestRecordOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "offset",
+          "limit",
+          "hasMore"
+        ],
+        "title": "LabelNodeTestRecordPageOut",
         "type": "object"
       },
       "LabelTaxonomyIn": {
@@ -2641,6 +2723,66 @@
         ]
       }
     },
+    "/api/v1/label-nodes/{node_id}/config/versions/compare": {
+      "get": {
+        "operationId": "compare_node_config_versions_api_v1_label_nodes__node_id__config_versions_compare_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fromVersionId",
+            "required": true,
+            "schema": {
+              "title": "Fromversionid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "toVersionId",
+            "required": true,
+            "schema": {
+              "title": "Toversionid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelNodeConfigVersionDiffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Compare Node Config Versions",
+        "tags": [
+          "label-nodes"
+        ]
+      }
+    },
     "/api/v1/label-nodes/{node_id}/examples": {
       "get": {
         "operationId": "list_node_examples_api_v1_label_nodes__node_id__examples_get",
@@ -2916,6 +3058,17 @@
           },
           {
             "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
             "name": "limit",
             "required": false,
             "schema": {
@@ -2925,6 +3078,38 @@
               "title": "Limit",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "hitLabel",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hitlabel"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
           }
         ],
         "responses": {
@@ -2932,11 +3117,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/LabelNodeTestRecordOut"
-                  },
-                  "title": "Response List Node Test Records Api V1 Label Nodes  Node Id  Test Records Get",
-                  "type": "array"
+                  "$ref": "#/components/schemas/LabelNodeTestRecordPageOut"
                 }
               }
             },

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.api.v1.label_nodes import (
+    compare_node_config_versions,
     create_node_example,
     delete_node_example,
     get_node_config,
@@ -53,6 +54,11 @@ def test_label_node_config_get_upsert_and_versions() -> None:
         versions = list_node_config_versions("node-install-delay", db)
         assert versions, "expected config versions"
         assert versions[0].labelNodeId == "node-install-delay"
+        if len(versions) >= 2:
+            diff = compare_node_config_versions("node-install-delay", versions[1].id, versions[0].id, db)
+            assert diff.fromVersionId == versions[1].id
+            assert diff.toVersionId == versions[0].id
+            assert any(change.field == "version" for change in diff.changes)
 
         tree = get_taxonomy_tree("tax-install-service", "ver-install-v1-1", db)
         target_node = next(item for item in tree if item.id == "node-install-delay")
@@ -106,14 +112,27 @@ def test_label_node_test_and_records_api() -> None:
     init_db()
 
     with SessionLocal() as db:
+        marker = "pytest-unmatched-marker-20260402"
         result = run_node_test("node-install-delay", LabelNodeTestIn(contentText="appointment timeout and no callback"), db)
+        run_node_test("node-install-delay", LabelNodeTestIn(contentText=marker), db)
         assert result.nodeId == "node-install-delay"
         assert isinstance(result.rawOutput, str)
         assert isinstance(result.parsedOutput, dict)
         assert "label" in result.parsedOutput
         assert result.latency > 0
 
-        records = list_node_test_records("node-install-delay", 20, db)
-        assert records, "expected persisted test records"
-        assert records[0].nodeId == "node-install-delay"
-        assert records[0].inputText
+        records_page = list_node_test_records("node-install-delay", 0, 1, None, None, db)
+        assert records_page.items, "expected persisted test records"
+        assert records_page.items[0].nodeId == "node-install-delay"
+        assert records_page.items[0].inputText
+        assert records_page.total >= len(records_page.items)
+        assert records_page.limit == 1
+        assert records_page.offset == 0
+
+        unmatched_page = list_node_test_records("node-install-delay", 0, 20, "UNMATCHED", None, db)
+        assert unmatched_page.items, "expected unmatched records"
+        assert all(item.hitLabel == "UNMATCHED" for item in unmatched_page.items)
+
+        marker_page = list_node_test_records("node-install-delay", 0, 20, None, marker, db)
+        assert marker_page.items, "expected marker query match"
+        assert any(marker in item.inputText for item in marker_page.items)

@@ -4,7 +4,7 @@ import json
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import asc, desc, func, select
+from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.v1.label_taxonomies import ensure_taxonomy_seed
@@ -18,13 +18,16 @@ from app.models.config import (
     LabelTaxonomyNodeTestRecord,
 )
 from app.schemas.taxonomy import (
+    LabelNodeConfigDiffItem,
     LabelNodeConfigIn,
     LabelNodeConfigOut,
+    LabelNodeConfigVersionDiffOut,
     LabelNodeConfigVersionOut,
     LabelNodeExampleIn,
     LabelNodeExampleOut,
     LabelNodeExampleUpdateIn,
     LabelNodeTestIn,
+    LabelNodeTestRecordPageOut,
     LabelNodeTestOut,
     LabelNodeTestRecordOut,
 )
@@ -52,6 +55,22 @@ def _get_example_or_404(db: Session, node_id: str, example_id: str) -> LabelTaxo
     )
     if row is None:
         raise HTTPException(status_code=404, detail="label node example not found")
+    return row
+
+
+def _get_config_version_or_404(
+    db: Session,
+    node_id: str,
+    version_id: str,
+) -> LabelTaxonomyNodeConfigVersion:
+    row = db.scalar(
+        select(LabelTaxonomyNodeConfigVersion).where(
+            LabelTaxonomyNodeConfigVersion.id == version_id,
+            LabelTaxonomyNodeConfigVersion.label_node_id == node_id,
+        )
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail="config version not found")
     return row
 
 
@@ -126,6 +145,62 @@ def _to_test_record_out(record: LabelTaxonomyNodeTestRecord) -> LabelNodeTestRec
         inputText=record.input_text,
         createdAt=record.created_at,
         **payload.model_dump(),
+    )
+
+
+_CONFIG_DIFF_FIELDS = [
+    "version",
+    "promptName",
+    "definition",
+    "decisionRule",
+    "excludeRule",
+    "taggingRule",
+    "systemPrompt",
+    "userPromptTemplate",
+    "outputSchema",
+    "postProcessRule",
+    "fallbackStrategy",
+    "riskNote",
+    "remark",
+    "modelName",
+    "temperature",
+    "status",
+]
+
+
+def _to_diff_value(value: object) -> object:
+    if isinstance(value, (str, int, float, bool, list, dict)) or value is None:
+        return value
+    return str(value)
+
+
+def _build_config_version_diff(
+    from_row: LabelTaxonomyNodeConfigVersion,
+    to_row: LabelTaxonomyNodeConfigVersion,
+) -> LabelNodeConfigVersionDiffOut:
+    from_snapshot = from_row.snapshot if isinstance(from_row.snapshot, dict) else {}
+    to_snapshot = to_row.snapshot if isinstance(to_row.snapshot, dict) else {}
+    extra_fields = sorted((set(from_snapshot.keys()) | set(to_snapshot.keys())) - set(_CONFIG_DIFF_FIELDS))
+    ordered_fields = [*_CONFIG_DIFF_FIELDS, *extra_fields]
+
+    changes: list[LabelNodeConfigDiffItem] = []
+    for field in ordered_fields:
+        from_value = _to_diff_value(from_snapshot.get(field))
+        to_value = _to_diff_value(to_snapshot.get(field))
+        if from_value == to_value:
+            continue
+        changes.append(
+            LabelNodeConfigDiffItem(
+                field=field,
+                fromValue=from_value,
+                toValue=to_value,
+            )
+        )
+
+    return LabelNodeConfigVersionDiffOut(
+        fromVersionId=from_row.id,
+        toVersionId=to_row.id,
+        changes=changes,
     )
 
 
@@ -310,6 +385,20 @@ def list_node_config_versions(node_id: str, db: Session = Depends(get_db)) -> li
     return [_to_node_config_version_out(row) for row in rows]
 
 
+@router.get("/{node_id}/config/versions/compare", response_model=LabelNodeConfigVersionDiffOut)
+def compare_node_config_versions(
+    node_id: str,
+    from_version_id: str = Query(..., alias="fromVersionId"),
+    to_version_id: str = Query(..., alias="toVersionId"),
+    db: Session = Depends(get_db),
+) -> LabelNodeConfigVersionDiffOut:
+    _refresh_node_data(db)
+    _get_node_or_404(db, node_id)
+    from_row = _get_config_version_or_404(db, node_id, from_version_id)
+    to_row = _get_config_version_or_404(db, node_id, to_version_id)
+    return _build_config_version_diff(from_row, to_row)
+
+
 @router.put("/{node_id}/config", response_model=LabelNodeConfigOut)
 def upsert_node_config(node_id: str, payload: LabelNodeConfigIn, db: Session = Depends(get_db)) -> LabelNodeConfigOut:
     _refresh_node_data(db)
@@ -480,18 +569,45 @@ def run_node_test(node_id: str, payload: LabelNodeTestIn, db: Session = Depends(
     return _to_test_out(record)
 
 
-@router.get("/{node_id}/test-records", response_model=list[LabelNodeTestRecordOut])
+@router.get("/{node_id}/test-records", response_model=LabelNodeTestRecordPageOut)
 def list_node_test_records(
     node_id: str,
+    offset: int = Query(default=0, ge=0),
     limit: int = Query(default=20, ge=1, le=200),
+    hit_label: str | None = Query(default=None, alias="hitLabel"),
+    q: str | None = Query(default=None),
     db: Session = Depends(get_db),
-) -> list[LabelNodeTestRecordOut]:
+) -> LabelNodeTestRecordPageOut:
     _refresh_node_data(db)
     _get_node_or_404(db, node_id)
+    conditions = [LabelTaxonomyNodeTestRecord.label_node_id == node_id]
+    if hit_label and hit_label != "all":
+        conditions.append(LabelTaxonomyNodeTestRecord.hit_label == hit_label)
+
+    keyword = q.strip() if q else ""
+    if keyword:
+        like_keyword = f"%{keyword}%"
+        conditions.append(
+            or_(
+                LabelTaxonomyNodeTestRecord.input_text.ilike(like_keyword),
+                LabelTaxonomyNodeTestRecord.hit_label.ilike(like_keyword),
+                LabelTaxonomyNodeTestRecord.raw_output.ilike(like_keyword),
+            )
+        )
+
+    total = int(db.scalar(select(func.count()).select_from(LabelTaxonomyNodeTestRecord).where(*conditions)) or 0)
     rows = db.scalars(
         select(LabelTaxonomyNodeTestRecord)
-        .where(LabelTaxonomyNodeTestRecord.label_node_id == node_id)
+        .where(*conditions)
         .order_by(desc(LabelTaxonomyNodeTestRecord.created_at), desc(LabelTaxonomyNodeTestRecord.id))
+        .offset(offset)
         .limit(limit)
     ).all()
-    return [_to_test_record_out(row) for row in rows]
+    items = [_to_test_record_out(row) for row in rows]
+    return LabelNodeTestRecordPageOut(
+        items=items,
+        total=total,
+        offset=offset,
+        limit=limit,
+        hasMore=offset + len(items) < total,
+    )

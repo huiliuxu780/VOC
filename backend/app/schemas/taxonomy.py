@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -146,3 +147,23 @@ class LabelNodeConfigVersionOut(BaseModel):
     status: str
     snapshot: dict
     createdAt: datetime
+
+
+class LabelNodeConfigDiffItem(BaseModel):
+    field: str
+    fromValue: Any
+    toValue: Any
+
+
+class LabelNodeConfigVersionDiffOut(BaseModel):
+    fromVersionId: str
+    toVersionId: str
+    changes: list[LabelNodeConfigDiffItem] = Field(default_factory=list)
+
+
+class LabelNodeTestRecordPageOut(BaseModel):
+    items: list[LabelNodeTestRecordOut]
+    total: int
+    offset: int
+    limit: int
+    hasMore: bool

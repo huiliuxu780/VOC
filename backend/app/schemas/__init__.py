@@ -12,12 +12,15 @@ from app.schemas.monitoring import DashboardMetrics
 from app.schemas.prompt import PromptConfigIn, PromptConfigOut
 from app.schemas.settings import ModelConfigBulkUpdate, ModelConfigItem, ModelConfigUpdateItem
 from app.schemas.taxonomy import (
+    LabelNodeConfigDiffItem,
     LabelNodeConfigIn,
     LabelNodeConfigOut,
+    LabelNodeConfigVersionDiffOut,
     LabelNodeExampleIn,
     LabelNodeExampleOut,
     LabelNodeExampleUpdateIn,
     LabelNodeTestIn,
+    LabelNodeTestRecordPageOut,
     LabelNodeTestRecordOut,
     LabelNodeTestOut,
     LabelNodeConfigVersionOut,
@@ -51,11 +54,14 @@ __all__ = [
     "LabelTaxonomyNodeOut",
     "LabelNodeConfigIn",
     "LabelNodeConfigOut",
+    "LabelNodeConfigDiffItem",
+    "LabelNodeConfigVersionDiffOut",
     "LabelNodeExampleIn",
     "LabelNodeExampleOut",
     "LabelNodeExampleUpdateIn",
     "LabelNodeTestIn",
     "LabelNodeTestOut",
+    "LabelNodeTestRecordPageOut",
     "LabelNodeTestRecordOut",
     "LabelNodeConfigVersionOut",
 ]
