@@ -115,6 +115,29 @@
 
 ---
 
+## refactor/taxonomy-detail-node-editor-section
+
+- **用途：** 将标签体系详情页中的节点编辑字段区抽离为独立组件，降低页面文件复杂度
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/LabelTaxonomyDetailPage.tsx`、节点编辑表单区域
+- **基于分支：** refactor/taxonomy-detail-workspace-layout
+- **主要改动文件：**
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/TaxonomyNodeConfigEditorSection.tsx`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成组件拆分：将 `Rule & Prompt` 的节点编辑字段区抽离为 `TaxonomyNodeConfigEditorSection`，由父页通过 props 注入 `configDraft/configSaving` 与保存回调，保持 API 调用、状态更新与原有交互文案一致，降低详情页单文件复杂度。
+- **验证情况：**
+  - lint：不适用（仓库未设置前端 lint 门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 6 tests）；`cd frontend && npm run test` 通过（11 files, 39 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化回归为主）
+- **风险说明：** 若 props 边界定义不完整，可能导致表单状态更新回归或按钮可用态异常。
+- **下一步：** 发起本分支 PR；若通过评审，下一切片可继续抽离 Examples 编辑列表区，进一步推进详情页模块化。
+
+---
+
 ## feature/label-taxonomy-p0-shell
 
 - **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）

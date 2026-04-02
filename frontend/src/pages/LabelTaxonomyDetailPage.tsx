@@ -29,6 +29,7 @@ import {
   getDemoVersionById,
   getDemoVersionsByTaxonomy
 } from "./labelTaxonomy.fixtures";
+import { TaxonomyNodeConfigEditorSection } from "./TaxonomyNodeConfigEditorSection";
 
 type NodeTab = "basic" | "rule-prompt" | "examples" | "testing" | "versions" | "mapping";
 type TestRecordQueryOptions = {
@@ -765,72 +766,14 @@ export function LabelTaxonomyDetailPage() {
                     </TabsContent>
 
                     <TabsContent value="rule-prompt" className="space-y-3">
-                      {configLoading ? <p className="text-xs text-textSecondary">Loading node config...</p> : null}
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <label className="space-y-1 text-xs text-textSecondary">
-                          <span>Prompt Name</span>
-                          <input
-                            value={configDraft.promptName}
-                            onChange={(event) => setConfigDraft((prev) => ({ ...prev, promptName: event.target.value }))}
-                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors focus:border-indigo-300/60"
-                          />
-                        </label>
-                        <label className="space-y-1 text-xs text-textSecondary">
-                          <span>Version</span>
-                          <input
-                            value={configDraft.version}
-                            onChange={(event) => setConfigDraft((prev) => ({ ...prev, version: event.target.value }))}
-                            className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-2 text-sm text-textPrimary outline-none transition-colors focus:border-indigo-300/60"
-                          />
-                        </label>
-                      </div>
-
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>Definition</span>
-                        <Textarea rows={3} value={configDraft.definition} onChange={(event) => setConfigDraft((prev) => ({ ...prev, definition: event.target.value }))} />
-                      </label>
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>Decision Rule</span>
-                        <Textarea rows={3} value={configDraft.decisionRule} onChange={(event) => setConfigDraft((prev) => ({ ...prev, decisionRule: event.target.value }))} />
-                      </label>
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>System Prompt</span>
-                        <Textarea rows={4} value={configDraft.systemPrompt} onChange={(event) => setConfigDraft((prev) => ({ ...prev, systemPrompt: event.target.value }))} />
-                      </label>
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>User Prompt Template</span>
-                        <Textarea
-                          rows={3}
-                          value={configDraft.userPromptTemplate}
-                          onChange={(event) => setConfigDraft((prev) => ({ ...prev, userPromptTemplate: event.target.value }))}
-                        />
-                      </label>
-                      <label className="space-y-1 text-xs text-textSecondary">
-                        <span>Output Schema</span>
-                        <Textarea rows={3} value={configDraft.outputSchema} onChange={(event) => setConfigDraft((prev) => ({ ...prev, outputSchema: event.target.value }))} />
-                      </label>
-
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          disabled={configSaving}
-                          onClick={() => void saveConfig("draft")}
-                          className="cursor-pointer rounded-lg border border-indigo-400/45 px-3 py-1.5 text-xs text-indigo-100 transition-colors hover:border-indigo-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {configSaving ? "Saving..." : "Save Config"}
-                        </button>
-                        <button
-                          type="button"
-                          disabled={configSaving}
-                          onClick={() => void saveConfig("published")}
-                          className="cursor-pointer rounded-lg border border-emerald-400/45 px-3 py-1.5 text-xs text-emerald-100 transition-colors hover:border-emerald-300/65 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Publish Config
-                        </button>
-                        <span className="text-xs text-textSecondary">
-                          Current status: {nodeConfig?.status ?? configDraft.status}
-                        </span>
-                      </div>
+                      <TaxonomyNodeConfigEditorSection
+                        configLoading={configLoading}
+                        configSaving={configSaving}
+                        configDraft={configDraft}
+                        currentStatus={nodeConfig?.status ?? configDraft.status}
+                        onConfigDraftChange={setConfigDraft}
+                        onSaveConfig={(status) => void saveConfig(status)}
+                      />
                     </TabsContent>
 
                     <TabsContent value="examples" className="space-y-3">
