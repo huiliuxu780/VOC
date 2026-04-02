@@ -66,7 +66,7 @@
   - `frontend/src/hooks/useSelectionSource.ts`
   - `frontend/src/pages/LabelManagementPage.tsx`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 新增 `useSelectionSource` hook（`set/get/clear`），替换页面内 `searchSelectionSourceRef` 的手写来源状态逻辑；既有键盘滚动与鼠标选择行为保持不变。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -75,7 +75,7 @@
   - build：`cd frontend && npm run build` 通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 若其他页面复用该 hook 时没有统一来源语义，可能导致行为口径不一致。
-- **下一步：** 合并到 `main` 后用于后续搜索交互模块复用。
+- **下一步：** 已合并到 `main`；后续可在其他列表页面复用该 hook 统一来源判定语义。
 
 ---
 
