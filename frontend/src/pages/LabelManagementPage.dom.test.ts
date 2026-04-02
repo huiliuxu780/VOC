@@ -309,6 +309,88 @@ describe("LabelManagementPage DOM interactions", () => {
     }
   });
 
+  it("uses auto scroll behavior when prefers-reduced-motion is enabled", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);
+
+    const originalScrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
+    const originalMatchMediaDescriptor = Object.getOwnPropertyDescriptor(window, "matchMedia");
+    const scrollIntoViewMock = vi.fn();
+    const matchMediaMock = vi.fn().mockReturnValue({
+      matches: true,
+      media: "(prefers-reduced-motion: reduce)",
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn()
+    });
+
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock
+    });
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: matchMediaMock
+    });
+
+    try {
+      const { container, unmount } = await renderComponent(React.createElement(LabelManagementPage));
+
+      await waitFor(() => {
+        expect(container.textContent).toContain("Loaded 3 labels");
+      });
+
+      const searchInput = container.querySelector("input[aria-label='Search labels']");
+      expect(searchInput).not.toBeNull();
+
+      await changeInputValue(searchInput as HTMLInputElement, "install");
+      await keyDownElement(searchInput as HTMLInputElement, "ArrowDown");
+
+      await waitFor(() => {
+        expect(scrollIntoViewMock).toHaveBeenCalled();
+      });
+
+      expect(matchMediaMock).toHaveBeenCalledWith("(prefers-reduced-motion: reduce)");
+      expect(scrollIntoViewMock).toHaveBeenLastCalledWith({ block: "nearest", behavior: "auto" });
+
+      await unmount();
+    } finally {
+      if (originalScrollDescriptor) {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", originalScrollDescriptor);
+      } else {
+        Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+          configurable: true,
+          writable: true,
+          value: () => {}
+        });
+      }
+
+      if (originalMatchMediaDescriptor) {
+        Object.defineProperty(window, "matchMedia", originalMatchMediaDescriptor);
+      } else {
+        Object.defineProperty(window, "matchMedia", {
+          configurable: true,
+          writable: true,
+          value: () => ({
+            matches: false,
+            media: "",
+            onchange: null,
+            addListener: () => {},
+            removeListener: () => {},
+            addEventListener: () => {},
+            removeEventListener: () => {},
+            dispatchEvent: () => false
+          })
+        });
+      }
+    }
+  });
+
   it("does not auto-scroll when selecting by pointer click", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockResolvedValue([rootLabel, childLabel, secondInstallLabel]);

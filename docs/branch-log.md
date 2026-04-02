@@ -56,6 +56,29 @@
 
 ---
 
+## feature/label-search-reduced-motion-scroll
+
+- **用途：** 兼顾可访问性，在 `prefers-reduced-motion` 场景下降级搜索自动滚动动画
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/pages/LabelManagementPage.tsx`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/pages/LabelManagementPage.tsx`
+  - `frontend/src/pages/LabelManagementPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 自动滚动行为新增可访问性降级：当系统偏好 `prefers-reduced-motion: reduce` 时，活动项滚动由 `smooth` 降级为 `auto`；默认场景保持平滑滚动。补充 DOM 回归测试覆盖 reduced-motion 分支。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelManagementPage.dom.test.ts` 通过（1 file, 9 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 媒体查询兼容处理若不完整，可能导致部分环境下滚动行为与预期不一致。
+- **下一步：** 发起 PR 评审并合并；后续可考虑将滚动行为策略抽取为复用 helper 供其他列表场景复用。
+
+---
+
 ## feature/label-search-scroll-keyboard-only
 
 - **用途：** 限定搜索自动滚动触发条件，仅在键盘导航时滚动活动项

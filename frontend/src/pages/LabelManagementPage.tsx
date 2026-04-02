@@ -48,6 +48,13 @@ function renderHighlightedText(text: string, searchText: string, keyPrefix: stri
   });
 }
 
+function getPreferredScrollBehavior(): ScrollBehavior {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return "smooth";
+  }
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
+
 export function LabelManagementPage() {
   const [labels, setLabels] = useState<LabelRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -210,7 +217,7 @@ export function LabelManagementPage() {
     if (!hasSearchText || selectedLabelId === null) return;
     if (!filteredLabels.some((item) => item.id === selectedLabelId)) return;
     const activeButton = labelButtonRefs.current[selectedLabelId];
-    activeButton?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    activeButton?.scrollIntoView({ block: "nearest", behavior: getPreferredScrollBehavior() });
     searchSelectionSourceRef.current = null;
   }, [hasSearchText, selectedLabelId, filteredLabels]);
 
