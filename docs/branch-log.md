@@ -54,17 +54,18 @@
   - `backend/contracts/openapi.snapshot.json`
   - `frontend/src/lib/api.ts`
   - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
   - `docs/branch-log.md`
 - **当前状态：** review_ready
-- **改动说明：** 已完成第三阶段扩展：后端新增配置版本 compare 接口、测试记录分页/筛选接口，前端详情页补齐 `Versions` 对比面板与 `Testing` 过滤/翻页交互，并完成接口与类型对齐。
+- **改动说明：** 已完成第三阶段扩展并推送远端；补齐 `LabelTaxonomyDetailPage` 的 DOM 回归测试，覆盖“默认版本 diff 请求与渲染”以及“测试记录筛选 + 翻页请求”关键路径，形成可迭代的稳定基线。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
-  - tests：`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests/test_label_nodes_api.py` 通过（3 passed）；`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests` 通过（12 passed）；`cd frontend && npm run test` 通过（10 files, 33 tests）
+  - tests：`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests/test_label_nodes_api.py` 通过（3 passed）；`$env:PYTHONPATH='e:\My Voc\backend'; pytest -q backend/tests` 通过（12 passed）；`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 2 tests）；`cd frontend && npm run test` 通过（11 files, 35 tests）
   - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
   - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py --update` 已执行并更新快照；`python backend/scripts/check_openapi_snapshot.py` 再次校验通过
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 接口模型仍属第一版，若后续字段口径调整，需要同步迁移前端状态映射。
-- **下一步：** 发起本分支 PR，等待评审后按发布节奏合并。
+- **下一步：** 以当前分支发起 PR 并进入评审；如你确认，我将继续在下一分支推进重构文档里的下一批需求。
 
 ---
 
