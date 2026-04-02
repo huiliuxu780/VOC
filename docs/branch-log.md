@@ -63,7 +63,7 @@
   - `backend/contracts/openapi.snapshot.json`
   - `docs/branch-log.md`
 - **当前状态：** review_ready
-- **改动说明：** 已完成 P0 前后端闭环：前端新增标签体系 IA 与三页骨架；后端新增 `label-taxonomies` 接口族（列表/详情/创建/更新/版本详情/树数据），并补充 taxonomy/version/node 数据模型与种子数据。前端在 API 可用时优先走真实接口，仅在异常场景回退演示数据；同时更新 OpenAPI 快照和后端回归测试。
+- **改动说明：** 已完成 P0 前后端闭环：前端新增标签体系 IA 与三页骨架，并在详情页补齐“体系切换器 + 版本切换器”；后端新增 `label-taxonomies` 接口族（列表/详情/创建/更新/版本详情/树数据），并补充 taxonomy/version/node 数据模型与种子数据。前端在 API 可用时优先走真实接口，仅在异常场景回退演示数据；同时更新 OpenAPI 快照和后端回归测试。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
   - tests：`cd frontend && npm run test` 通过（10 files, 33 tests）；`$env:PYTHONPATH='e:\My Voc\backend'; cd backend && pytest -q` 通过（9 passed）
