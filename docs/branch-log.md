@@ -138,6 +138,30 @@
 
 ---
 
+## refactor/taxonomy-detail-examples-section
+
+- **用途：** 将标签体系详情页 Examples 区域抽离为独立组件，继续降低详情页耦合度
+- **任务类型：** 重构
+- **关联页面/模块：** `frontend/src/pages/LabelTaxonomyDetailPage.tsx`、Examples 编辑与列表区域
+- **基于分支：** refactor/taxonomy-detail-node-editor-section
+- **主要改动文件：**
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/TaxonomyNodeExamplesSection.tsx`
+  - `frontend/src/pages/LabelTaxonomyDetailPage.dom.test.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成 Examples 区域组件化：将新增示例、分组空态、编辑/删除交互 UI 抽离到 `TaxonomyNodeExamplesSection`，父页仅保留状态与动作处理逻辑；原有 API 调用与行为保持不变。新增 DOM 回归用例覆盖 Examples 分组空态与编辑控件可见性，作为后续重构基线。
+- **验证情况：**
+  - lint：不适用（仓库未设置前端 lint 门禁）
+  - tests：`cd frontend && npm run test -- src/pages/LabelTaxonomyDetailPage.dom.test.ts` 通过（1 file, 7 tests）；`cd frontend && npm run test` 通过（11 files, 40 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化回归为主）
+- **风险说明：** Examples 区域交互较多，若 props 透传遗漏，可能导致编辑态或删除态行为回归。
+- **下一步：** 发起该分支 PR；若通过评审，下一切片可继续抽离 Testing 页签为独立组件，进一步压缩 `LabelTaxonomyDetailPage` 主体复杂度。
+
+---
+
 ## feature/label-taxonomy-p0-shell
 
 - **用途：** 按重构实施文档落地标签体系管理 P0 前后端闭环（前端页面壳层 + 后端 taxonomy API）

@@ -398,6 +398,45 @@ describe("LabelTaxonomyDetailPage DOM interactions", () => {
     await unmount();
   });
 
+  it("renders examples editor controls and grouped empty states", async () => {
+    const apiGetMock = vi.mocked(apiModule.apiGet);
+    apiGetMock.mockImplementation(async (path: string) => {
+      if (path === "/label-taxonomies") return taxonomyRows;
+      if (path === "/label-taxonomies/tax-1") return taxonomyRows[0];
+      if (path === "/label-taxonomies/tax-1/versions") return versionRows;
+      if (path === "/label-taxonomies/tax-1/versions/ver-1") return versionRows[0];
+      if (path === "/label-taxonomies/tax-1/versions/ver-1/tree") return treeRows;
+      if (path === "/label-nodes/node-install-delay/config") return nodeConfig;
+      if (path === "/label-nodes/node-install-delay/examples") return [];
+      if (path === "/label-nodes/node-install-delay/config/versions") return configVersions;
+      if (path === "/label-nodes/node-install-delay/config/versions/compare?fromVersionId=cfgv1&toVersionId=cfgv2") return diffResult;
+      if (path === "/label-nodes/node-install-delay/test-records?offset=0&limit=10") {
+        return {
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 10,
+          hasMore: false
+        } satisfies LabelNodeTestRecordPage;
+      }
+      throw new Error(`unexpected apiGet path: ${path}`);
+    });
+
+    const router = createRouter();
+    const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
+
+    await clickElement(findButtonByText(container, "Examples"));
+    await waitFor(() => {
+      expect(container.textContent).toContain("Add Example");
+      expect(container.textContent).toContain("positive (0)");
+      expect(container.textContent).toContain("negative (0)");
+      expect(container.textContent).toContain("boundary (0)");
+      expect(container.textContent).toContain("counter (0)");
+    });
+
+    await unmount();
+  });
+
   it("shows empty state when current node has no config versions", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockImplementation(async (path: string) => {
