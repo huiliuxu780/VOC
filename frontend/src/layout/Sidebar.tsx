@@ -5,11 +5,12 @@ const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/datasources", label: "数据源接入", icon: Database },
   { to: "/mapping", label: "Mapping 配置", icon: Network },
-  { to: "/labels", label: "标签层级管理", icon: Tag },
-  { to: "/prompts", label: "Prompt 管理", icon: ScrollText },
+  { to: "/label-taxonomies", label: "标签体系管理", icon: Tag },
+  { to: "/prompt-debug", label: "Prompt 调试中心", icon: ScrollText },
   { to: "/jobs", label: "作业任务管理", icon: Layers3 },
   { to: "/pipeline", label: "分析链路配置", icon: BarChart3 },
-  { to: "/monitoring", label: "监控中心", icon: Settings2 }
+  { to: "/monitoring", label: "监控中心", icon: Settings2 },
+  { to: "/settings", label: "系统设置", icon: Settings2 }
 ];
 
 export function Sidebar() {

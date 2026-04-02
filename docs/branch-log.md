@@ -35,6 +35,38 @@
 
 ---
 
+## feature/label-taxonomy-p0-shell
+
+- **用途：** 按重构实施文档落地标签体系管理 P0 前端骨架（路由、导航、列表/编辑/详情页）
+- **任务类型：** 功能开发
+- **关联页面/模块：** `frontend/src/app/router.tsx`、`frontend/src/layout/Sidebar.tsx`、`frontend/src/pages/*Taxonomy*`
+- **基于分支：** main
+- **主要改动文件：**
+  - `frontend/src/app/router.tsx`
+  - `frontend/src/layout/Sidebar.tsx`
+  - `frontend/src/pages/LabelTaxonomyListPage.tsx`
+  - `frontend/src/pages/LabelTaxonomyFormPage.tsx`
+  - `frontend/src/pages/LabelTaxonomyDetailPage.tsx`
+  - `frontend/src/pages/labelTaxonomy.fixtures.ts`
+  - `frontend/src/components/ui/Tabs.tsx`
+  - `frontend/src/components/ui/Textarea.tsx`
+  - `frontend/src/app/router.integration.dom.test.ts`
+  - `frontend/src/pages/SettingsPage.tsx`
+  - `frontend/src/lib/api.ts`
+  - `docs/branch-log.md`
+- **当前状态：** review_ready
+- **改动说明：** 已完成标签体系管理 P0 前端壳层重构：新增 `label-taxonomies` 路由族（列表/新建/编辑/详情/节点深链），侧边栏将“标签层级管理”升级为“标签体系管理”，将“Prompt 管理”降级为“Prompt 调试中心”；新增标签体系列表页、体系表单页、三段式详情页（顶部上下文 + 左树 + 右侧 Tabs），并补充 `Tabs` / `Textarea` 基础组件与演示数据夹具，后端新 API 未接通时自动回退演示数据以保证可用展示。
+- **验证情况：**
+  - lint：不适用（本轮未以 lint 作为门禁）
+  - tests：`cd frontend && npm run test` 通过（10 files, 33 tests）
+  - type-check：`cd frontend && npm run build` 已包含 `tsc -b`，通过
+  - build：`cd frontend && npm run build` 通过
+  - 手工验证：未执行（本轮以自动化验证为主）
+- **风险说明：** 后端新 API 尚未完全对齐时，页面数据以占位/兼容方式呈现，后续需对接真实接口。
+- **下一步：** 进入 P0 下一步：对接真实 `label-taxonomies` 系列 API，并逐步替换演示数据回退逻辑。
+
+---
+
 ## feature/label-search-a11y-hints
 
 - **用途：** 优化标签搜索区域的键盘可用性提示与 ARIA 语义，降低键盘用户的学习成本

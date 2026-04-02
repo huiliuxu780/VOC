@@ -242,3 +242,84 @@ export type LabelUpsertPayload = {
   llm_enabled: boolean;
   default_prompt_version: string;
 };
+
+export type TaxonomyStatus = "draft" | "published" | "archived";
+
+export type LabelTaxonomyRecord = {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  businessScope: string[];
+  categoryScope: string[];
+  owner?: string;
+  status: TaxonomyStatus;
+  currentVersionId?: string;
+  nodeCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
+};
+
+export type LabelTaxonomyVersionRecord = {
+  id: string;
+  taxonomyId: string;
+  version: string;
+  status: TaxonomyStatus;
+  changeLog?: string;
+  nodeCount?: number;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
+};
+
+export type LabelNodeRecord = {
+  id: string;
+  taxonomyVersionId: string;
+  parentId: string | null;
+  name: string;
+  code: string;
+  level: number;
+  pathNames: string[];
+  pathIds: string[];
+  isLeaf: boolean;
+  llmEnabled: boolean;
+  sortOrder: number;
+  status: "enabled" | "disabled";
+  categoryScope?: string[];
+  businessScope?: string[];
+  remark?: string;
+  hasConfig?: boolean;
+  hasExamples?: boolean;
+  configStatus?: "empty" | "draft" | "published" | "invalid";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type LabelNodeConfigRecord = {
+  id: string;
+  labelNodeId: string;
+  version: string;
+  promptName?: string;
+  definition?: string;
+  decisionRule?: string;
+  excludeRule?: string;
+  taggingRule?: string;
+  systemPrompt?: string;
+  userPromptTemplate?: string;
+  outputSchema?: string;
+  postProcessRule?: string;
+  fallbackStrategy?: string;
+  riskNote?: string;
+  remark?: string;
+  modelName?: string;
+  temperature?: number;
+  status: "draft" | "published";
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
+};

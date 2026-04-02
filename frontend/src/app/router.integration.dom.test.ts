@@ -3,7 +3,7 @@ import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import type {
-  LabelRecord,
+  LabelTaxonomyRecord,
   MonitoringAlertRecord,
   MonitoringDashboardMetrics,
   MonitoringDatasourceMetric,
@@ -12,7 +12,7 @@ import type {
 } from "../lib/api";
 import * as apiModule from "../lib/api";
 import { AppLayout } from "../layout/AppLayout";
-import { LabelManagementPage } from "../pages/LabelManagementPage";
+import { LabelTaxonomyListPage } from "../pages/LabelTaxonomyListPage";
 import { MonitoringPage } from "../pages/MonitoringPage";
 import { PromptManagementPage } from "../pages/PromptManagementPage";
 import { clickElement, findLinkByPath, renderComponent, waitFor } from "../test/domTestUtils";
@@ -28,17 +28,20 @@ vi.mock("../lib/api", async () => {
   };
 });
 
-const labelRows: LabelRecord[] = [
+const taxonomyRows: LabelTaxonomyRecord[] = [
   {
-    id: 1,
-    category_id: 1,
-    parent_id: null,
-    level: 1,
-    name: "Root Label",
-    code: "L1_ROOT",
-    is_leaf: false,
-    llm_enabled: true,
-    default_prompt_version: "v1"
+    id: "tax-route-demo",
+    name: "Route Taxonomy",
+    code: "ROUTE_TAX",
+    description: "demo",
+    businessScope: ["service"],
+    categoryScope: ["all"],
+    owner: "qa",
+    status: "draft",
+    currentVersionId: "ver-route-v1",
+    nodeCount: 2,
+    createdAt: "2026-04-02T00:00:00Z",
+    updatedAt: "2026-04-02T00:00:00Z"
   }
 ];
 
@@ -61,13 +64,9 @@ const monitoringMetrics: MonitoringDashboardMetrics = {
   open_alerts: 1
 };
 
-const monitoringDatasources: MonitoringDatasourceMetric[] = [
-  { datasource: "dwd_orders", success_rate: 0.97, latency_ms: 90 }
-];
+const monitoringDatasources: MonitoringDatasourceMetric[] = [{ datasource: "dwd_orders", success_rate: 0.97, latency_ms: 90 }];
 
-const monitoringModels: MonitoringModelMetric[] = [
-  { model: "gpt-4.1-mini", calls: 18, avg_latency_ms: 310, error_rate: 0.02 }
-];
+const monitoringModels: MonitoringModelMetric[] = [{ model: "gpt-4.1-mini", calls: 18, avg_latency_ms: 310, error_rate: 0.02 }];
 
 const monitoringAlerts: MonitoringAlertRecord[] = [
   {
@@ -87,9 +86,9 @@ function createTestRouter(initialEntries: string[]) {
         path: "/",
         element: React.createElement(AppLayout),
         children: [
-          { index: true, element: React.createElement(LabelManagementPage) },
-          { path: "labels", element: React.createElement(LabelManagementPage) },
-          { path: "prompts", element: React.createElement(PromptManagementPage) },
+          { index: true, element: React.createElement(LabelTaxonomyListPage) },
+          { path: "label-taxonomies", element: React.createElement(LabelTaxonomyListPage) },
+          { path: "prompt-debug", element: React.createElement(PromptManagementPage) },
           { path: "monitoring", element: React.createElement(MonitoringPage) }
         ]
       }
@@ -108,10 +107,10 @@ describe("router integration DOM", () => {
     document.body.innerHTML = "";
   });
 
-  it("navigates across pages and triggers each page API chain", async () => {
+  it("navigates taxonomy, prompt debug and monitoring pages", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockImplementation(async (path: string) => {
-      if (path === "/labels/tree") return labelRows;
+      if (path === "/label-taxonomies") return taxonomyRows;
       if (path === "/prompts?status=all") return promptRows;
       if (path === "/monitoring/dashboard") return monitoringMetrics;
       if (path === "/monitoring/datasources") return monitoringDatasources;
@@ -120,15 +119,15 @@ describe("router integration DOM", () => {
       throw new Error(`unexpected apiGet path: ${path}`);
     });
 
-    const router = createTestRouter(["/labels"]);
+    const router = createTestRouter(["/label-taxonomies"]);
     const { container, unmount } = await renderComponent(React.createElement(RouterProvider, { router }));
 
     await waitFor(() => {
-      expect(container.textContent).toContain("Label Tree");
-      expect(apiGetMock).toHaveBeenCalledWith("/labels/tree");
+      expect(container.textContent).toContain("标签体系管理");
+      expect(apiGetMock).toHaveBeenCalledWith("/label-taxonomies");
     });
 
-    await clickElement(findLinkByPath(container, "/prompts"));
+    await clickElement(findLinkByPath(container, "/prompt-debug"));
 
     await waitFor(() => {
       expect(container.textContent).toContain("Prompt");
@@ -148,10 +147,10 @@ describe("router integration DOM", () => {
     await unmount();
   });
 
-  it("shows monitoring load error and can recover by navigating to labels", async () => {
+  it("shows monitoring load error and can recover by navigating to taxonomy list", async () => {
     const apiGetMock = vi.mocked(apiModule.apiGet);
     apiGetMock.mockImplementation(async (path: string) => {
-      if (path === "/labels/tree") return labelRows;
+      if (path === "/label-taxonomies") return taxonomyRows;
       if (path === "/monitoring/dashboard") throw new Error("monitoring down");
       if (path === "/monitoring/datasources") return monitoringDatasources;
       if (path === "/monitoring/models") return monitoringModels;
@@ -166,11 +165,11 @@ describe("router integration DOM", () => {
       expect(container.textContent).toContain("monitoring down");
     });
 
-    await clickElement(findLinkByPath(container, "/labels"));
+    await clickElement(findLinkByPath(container, "/label-taxonomies"));
 
     await waitFor(() => {
-      expect(container.textContent).toContain("Label Tree");
-      expect(apiGetMock).toHaveBeenCalledWith("/labels/tree");
+      expect(container.textContent).toContain("标签体系管理");
+      expect(apiGetMock).toHaveBeenCalledWith("/label-taxonomies");
     });
 
     await unmount();
