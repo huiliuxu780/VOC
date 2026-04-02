@@ -62,7 +62,7 @@
   - `backend/tests/test_label_taxonomies_api.py`
   - `backend/contracts/openapi.snapshot.json`
   - `docs/branch-log.md`
-- **当前状态：** review_ready
+- **当前状态：** merged
 - **改动说明：** 已完成 P0 前后端闭环：前端新增标签体系 IA 与三页骨架，并在详情页补齐“体系切换器 + 版本切换器”；后端新增 `label-taxonomies` 接口族（列表/详情/创建/更新/版本详情/树数据），并补充 taxonomy/version/node 数据模型与种子数据。前端在 API 可用时优先走真实接口，仅在异常场景回退演示数据；同时更新 OpenAPI 快照和后端回归测试。
 - **验证情况：**
   - lint：不适用（本轮未以 lint 作为门禁）
@@ -71,7 +71,7 @@
   - build：`cd frontend && npm run build` 通过；`python backend/scripts/check_openapi_snapshot.py` 通过（已更新 snapshot）
   - 手工验证：未执行（本轮以自动化验证为主）
 - **风险说明：** 节点配置/示例/在线测试等深层接口仍是占位态，详情页部分 Tab 仍依赖演示数据展示结构。
-- **下一步：** 进入下一迭代：补齐节点配置、示例管理、测试调试 API，并将详情页 Tabs 从占位切换为真实接口读写。
+- **下一步：** 已合并到 `main`；下一迭代补齐节点配置、示例管理、测试调试 API，并将详情页 Tabs 从占位切换为真实接口读写。
 
 ---
 
